@@ -1,0 +1,25 @@
+{
+  "name": "@poker/agent-orchestrator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch --conditions=@poker/source src/servidor.ts",
+    "start": "node dist/servidor.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@poker/equity": "workspace:^",
+    "@poker/hand-evaluator": "workspace:^",
+    "@poker/shared-types": "workspace:^"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

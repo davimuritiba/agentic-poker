@@ -1,0 +1,17 @@
+{
+  "name": "@poker/equity",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "@poker/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@poker/hand-evaluator": "workspace:^",
+    "@poker/shared-types": "workspace:^"
+  }
+}

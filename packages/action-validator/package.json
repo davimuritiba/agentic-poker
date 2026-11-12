@@ -1,16 +1,15 @@
 {
   "name": "@poker/action-validator",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": {
+      "@poker/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
     "@poker/shared-types": "workspace:^"
   }

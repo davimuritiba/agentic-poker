@@ -1,0 +1,809 @@
+:root {
+  --fundo: #0f1a14;
+  --superficie: #18261e;
+  --borda: #2c4236;
+  --texto: #e8efe9;
+  --texto-suave: #9fb3a6;
+  --feltro: #1d6b45;
+  --feltro-escuro: #12452c;
+  --madeira: #4a2f1b;
+  --destaque: #f2c14e;
+  --perigo: #e5675b;
+  --sucesso: #5fd28d;
+  --carta: #fdfdfb;
+  --vermelho: #c8102e;
+  --preto: #1b1b1b;
+  color-scheme: dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--borda);
+  background: #24382c;
+  color: var(--texto);
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+}
+button:hover:not(:disabled) {
+  background: #2f4a3a;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: 2px;
+}
+
+input {
+  font: inherit;
+  background: #0c140f;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.topo h1 {
+  font-size: 1.3rem;
+  margin: 0.8rem 0;
+}
+.servico {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.luz {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--perigo);
+}
+.luz.ligada {
+  background: var(--sucesso);
+}
+
+.rodape {
+  margin-top: auto;
+  padding: 1.5rem 0 1rem;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.linha {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.detalhe,
+.dica {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+.erro {
+  color: var(--perigo);
+  margin: 0.5rem 0;
+}
+.aviso {
+  color: var(--destaque);
+}
+
+/* ---------- Menu inicial ---------- */
+
+.menu-inicial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 460px;
+  margin: 3rem auto 1rem;
+  text-align: center;
+}
+.leque {
+  display: flex;
+  justify-content: center;
+  height: 96px;
+  margin-bottom: 0.6rem;
+}
+.leque .carta {
+  width: 58px;
+  height: 84px;
+  margin: 0 -10px;
+  transform-origin: 50% 140%;
+  transition: transform 0.25s ease;
+}
+.leque .carta .valor,
+.leque .carta .naipe {
+  font-size: 1.35rem;
+}
+.leque .carta:nth-child(1) {
+  transform: rotate(-20deg);
+}
+.leque .carta:nth-child(2) {
+  transform: rotate(-10deg) translateY(-4px);
+}
+.leque .carta:nth-child(3) {
+  transform: translateY(-6px);
+}
+.leque .carta:nth-child(4) {
+  transform: rotate(10deg) translateY(-4px);
+}
+.leque .carta:nth-child(5) {
+  transform: rotate(20deg);
+}
+.leque:hover .carta:nth-child(1) {
+  transform: rotate(-28deg);
+}
+.leque:hover .carta:nth-child(2) {
+  transform: rotate(-14deg) translateY(-6px);
+}
+.leque:hover .carta:nth-child(3) {
+  transform: translateY(-10px);
+}
+.leque:hover .carta:nth-child(4) {
+  transform: rotate(14deg) translateY(-6px);
+}
+.leque:hover .carta:nth-child(5) {
+  transform: rotate(28deg);
+}
+
+.titulo-do-jogo {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 3rem);
+  letter-spacing: 0.02em;
+  color: var(--destaque);
+  text-shadow: 0 2px 12px rgb(242 193 78 / 25%);
+}
+.subtitulo {
+  margin: 0 0 0.6rem;
+  color: var(--texto-suave);
+}
+.formulario-do-menu {
+  display: grid;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+}
+.formulario-do-menu label {
+  margin-bottom: 0;
+}
+button.principal {
+  background: var(--destaque);
+  border-color: var(--destaque);
+  color: #1a1206;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 0.7rem 1rem;
+}
+button.principal:hover:not(:disabled) {
+  background: #f6d27a;
+}
+.como-jogar {
+  width: 100%;
+  text-align: left;
+}
+.como-jogar h3 {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.5rem;
+}
+.passos {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+.ranking {
+  margin: 0;
+  padding-left: 1.6rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+}
+.ranking li strong {
+  margin-right: 0.4rem;
+}
+.menu-inicial .servico {
+  justify-content: center;
+}
+
+.voltar-ao-menu {
+  justify-self: start;
+}
+
+/* ---------- Conta (login e cadastro) ---------- */
+
+.abas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.25rem;
+  margin-bottom: 0.4rem;
+  background: #0c140f;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+}
+.aba {
+  border: none;
+  background: transparent;
+  color: var(--texto-suave);
+}
+.aba.ativa {
+  background: #24382c;
+  color: var(--texto);
+  font-weight: 600;
+}
+.acesso input[aria-invalid='true'] {
+  border-color: var(--perigo);
+}
+.acesso .erro {
+  margin: 0;
+}
+.boas-vindas {
+  margin: 0 0 0.2rem;
+  text-align: center;
+}
+.boas-vindas strong {
+  color: var(--destaque);
+}
+.conta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+.apelido-logado {
+  font-weight: 600;
+  color: var(--destaque);
+}
+
+/* ---------- Lobby ---------- */
+
+.lobby {
+  display: grid;
+  gap: 1rem;
+  max-width: 560px;
+  width: 100%;
+  margin: 1rem auto;
+}
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+}
+.cartao h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+.cartao label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.cartao input {
+  flex: 1;
+  min-width: 0;
+}
+.lista-de-mesas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.lista-de-mesas li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+}
+.lista-de-mesas li > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+/* ---------- Mesa ---------- */
+
+.tela-da-mesa {
+  display: grid;
+  gap: 0.8rem;
+}
+.cabecalho-da-mesa {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.cabecalho-da-mesa h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+button.secundario {
+  background: transparent;
+}
+
+.area-de-jogo {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.feltro {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  min-height: 340px;
+  border-radius: 50% / 46%;
+  background: radial-gradient(ellipse at center, var(--feltro) 0%, var(--feltro-escuro) 75%);
+  border: 14px solid var(--madeira);
+  box-shadow:
+    inset 0 0 40px rgb(0 0 0 / 45%),
+    0 10px 30px rgb(0 0 0 / 40%);
+  margin: 40px 50px;
+}
+
+.centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+.cartas-comunitarias {
+  display: flex;
+  gap: 6px;
+}
+.pote {
+  margin: 0;
+  background: rgb(0 0 0 / 35%);
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 600;
+  max-width: 80%;
+  text-align: center;
+}
+
+.assento {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 1;
+}
+.assento.fora {
+  opacity: 0.5;
+}
+.placa {
+  background: rgb(10 18 13 / 92%);
+  border: 2px solid var(--borda);
+  border-radius: 10px;
+  padding: 0.3rem 0.6rem;
+  min-width: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.82rem;
+}
+.assento.voce .placa {
+  border-color: #6aa6ff;
+}
+.assento.da-vez .placa {
+  border-color: var(--destaque);
+  box-shadow: 0 0 14px rgb(242 193 78 / 55%);
+}
+.assento.ganhou .placa {
+  border-color: var(--sucesso);
+}
+.nome {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stack {
+  color: var(--destaque);
+}
+.estado {
+  color: var(--texto-suave);
+  font-size: 0.75rem;
+}
+.ganho {
+  color: var(--sucesso);
+  font-weight: 700;
+}
+.selo {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: #3b5bdb;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+.selo.alerta {
+  background: var(--perigo);
+}
+.selo.destaque {
+  background: var(--perigo);
+  margin-top: 2px;
+}
+.cronometro {
+  font-size: 0.75rem;
+  color: var(--destaque);
+}
+.cronometro.acabando {
+  color: var(--perigo);
+  font-weight: 700;
+}
+.botao-dealer {
+  position: absolute;
+  right: -14px;
+  top: 34px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  font-weight: 800;
+  font-size: 0.75rem;
+  display: grid;
+  place-items: center;
+}
+.aposta {
+  background: var(--destaque);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.cartas-do-jogador {
+  display: flex;
+  gap: 3px;
+  min-height: 52px;
+}
+
+.carta {
+  width: 46px;
+  height: 66px;
+  border-radius: 6px;
+  background: var(--carta);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+  border: 2px solid transparent;
+}
+.carta .valor {
+  font-size: 1.15rem;
+}
+.carta .naipe {
+  font-size: 1.25rem;
+}
+.carta.pequena {
+  width: 36px;
+  height: 52px;
+}
+.carta.pequena .valor,
+.carta.pequena .naipe {
+  font-size: 0.95rem;
+}
+.carta.vermelha {
+  color: var(--vermelho);
+}
+.carta.preta {
+  color: var(--preto);
+}
+.carta.verso {
+  background: repeating-linear-gradient(45deg, #8c1d2c 0 6px, #a8283a 6px 12px);
+  border-color: #fff;
+}
+.carta.espaco {
+  background: rgb(0 0 0 / 18%);
+  box-shadow: none;
+  border: 2px dashed rgb(255 255 255 / 18%);
+}
+.carta.destaque {
+  border-color: var(--sucesso);
+  box-shadow: 0 0 10px rgb(95 210 141 / 80%);
+}
+
+.historico {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  max-height: 260px;
+  overflow-y: auto;
+  font-size: 0.82rem;
+}
+.historico h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+}
+.historico ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.evento-cartas {
+  color: var(--destaque);
+}
+.evento-pote {
+  color: var(--sucesso);
+  font-weight: 600;
+}
+.evento-inicio {
+  color: var(--texto-suave);
+  border-top: 1px solid var(--borda);
+  padding-top: 0.3rem;
+}
+
+.painel-do-jogador {
+  min-height: 92px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+}
+.status {
+  margin: 0.4rem 0;
+  color: var(--texto-suave);
+}
+.barra-de-acoes {
+  display: grid;
+  gap: 0.6rem;
+}
+.botoes {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.botoes button {
+  min-width: 110px;
+  font-weight: 600;
+}
+button.desistir {
+  border-color: var(--perigo);
+}
+button.subir {
+  background: #2b5d42;
+}
+button.all-in {
+  background: #7a2a22;
+}
+.valor-da-aposta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.valor-da-aposta input[type='range'] {
+  flex: 1;
+  min-width: 140px;
+}
+.valor-da-aposta input[type='number'] {
+  width: 110px;
+}
+button.atalho {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+/* ---------- Coach IA ---------- */
+
+.lateral {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.coach {
+  background: var(--superficie);
+  border: 1px solid #3b5bdb;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.coach p {
+  margin: 0;
+}
+.coach-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.coach h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.interruptor {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.coach-dica,
+.coach-legenda,
+.coach-rodape,
+.recomendacao-fonte {
+  color: var(--texto-suave);
+}
+.coach-rodape,
+.recomendacao-fonte {
+  font-size: 0.72rem;
+}
+.coach-pensando {
+  color: var(--destaque);
+}
+button.coach-pedir {
+  background: #2c3f8f;
+}
+.barra-equity {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #4a2228;
+}
+.barra-equity .vitoria {
+  background: var(--sucesso);
+}
+.barra-equity .empate {
+  background: var(--destaque);
+}
+.possibilidades,
+.alternativas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.possibilidades li {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+.selo-avaliacao {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+.avaliacao-boa .selo-avaliacao {
+  background: #1f6b43;
+}
+.avaliacao-neutra .selo-avaliacao {
+  background: #7a6420;
+}
+.avaliacao-ruim .selo-avaliacao {
+  background: #7a2a22;
+}
+.recomendacao {
+  border-top: 1px solid var(--borda);
+  padding-top: 0.5rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.recomendacao-resumo {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.conceito {
+  background: rgb(242 193 78 / 10%);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+}
+
+@media (max-width: 860px) {
+  /* No celular: mesa, botões de jogada, coach e, por último, o histórico. */
+  .area-de-jogo,
+  .lateral {
+    display: contents;
+  }
+  .feltro {
+    order: 1;
+  }
+  .painel-do-jogador {
+    order: 2;
+  }
+  .coach {
+    order: 3;
+  }
+  .historico {
+    order: 4;
+    max-height: 220px;
+  }
+  .feltro {
+    margin: 50px 4px;
+    min-height: 300px;
+    aspect-ratio: 4 / 5;
+    border-radius: 45% / 35%;
+  }
+  .cartas-comunitarias {
+    gap: 4px;
+  }
+  .cartas-comunitarias .carta {
+    width: 30px;
+    height: 44px;
+  }
+  .placa {
+    min-width: 92px;
+    font-size: 0.72rem;
+  }
+  .carta {
+    width: 34px;
+    height: 50px;
+  }
+  .carta .valor,
+  .carta .naipe {
+    font-size: 0.9rem;
+  }
+  .carta.pequena {
+    width: 28px;
+    height: 40px;
+  }
+  .botoes button {
+    min-width: 0;
+    flex: 1 1 calc(50% - 0.5rem);
+  }
+}

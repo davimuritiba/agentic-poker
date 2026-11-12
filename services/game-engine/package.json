@@ -1,20 +1,27 @@
 {
   "name": "@poker/game-engine",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
     "@poker/action-validator": "workspace:^",
     "@poker/deck": "workspace:^",
     "@poker/hand-evaluator": "workspace:^",
-    "@poker/shared-types": "workspace:^"
+    "@poker/sessao": "workspace:^",
+    "@poker/shared-types": "workspace:^",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  },
+  "scripts": {
+    "dev": "tsx watch --conditions=@poker/source src/servidor/main.ts",
+    "start": "node dist/servidor/main.js"
   }
 }
