@@ -10,8 +10,8 @@
     }
   },
   "scripts": {
-    "dev": "tsx watch --conditions=@poker/source src/servidor.ts",
-    "start": "node dist/servidor.js"
+    "dev": "tsx watch --env-file-if-exists=../../.env --conditions=@poker/source src/servidor.ts",
+    "start": "node --env-file-if-exists=../../.env dist/servidor.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
