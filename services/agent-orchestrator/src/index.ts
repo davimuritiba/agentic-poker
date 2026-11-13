@@ -1,6 +1,12 @@
 export { recomendarComIA } from './agente.js';
-export type { CriarMensagem, OpcoesDoAgente, ResultadoDoAgente } from './agente.js';
+export type { CriarMensagem, OpcoesDoAgente } from './agente.js';
+export { clienteOllama, recomendarComOllama } from './agente-ollama.js';
+export type { ChamarOllama, OpcoesDoAgenteOllama } from './agente-ollama.js';
 export { analisar, avaliarPossibilidades, descreverMaoAtual } from './analise.js';
 export { montarContexto } from './contexto.js';
 export type { ContextoDoJogador } from './contexto.js';
+export type { ResultadoDoAgente } from './ferramentas.js';
+export { FilaCheia, FilaDaIA } from './fila.js';
+export { escolherProvedor } from './provedor.js';
+export type { Provedor } from './provedor.js';
 export { recomendarPorRegras } from './regras.js';

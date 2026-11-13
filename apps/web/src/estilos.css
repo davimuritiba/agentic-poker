@@ -1,25 +1,37 @@
+/*
+ * Visual do Agentic Poker: fonte pixelada (Pixelify Sans), superfícies escuras e sem
+ * excesso de bordas, sombras "duras" (sem desfoque) nos botões para dar o ar de jogo.
+ */
+
 :root {
-  --fundo: #0f1a14;
-  --superficie: #18261e;
-  --borda: #2c4236;
-  --texto: #e8efe9;
-  --texto-suave: #9fb3a6;
-  --feltro: #1d6b45;
-  --feltro-escuro: #12452c;
-  --madeira: #4a2f1b;
-  --destaque: #f2c14e;
-  --perigo: #e5675b;
+  --fundo: #0b100d;
+  --superficie: #131b16;
+  --superficie-2: #1a241e;
+  --borda: #24312a;
+  --texto: #eef3ef;
+  --texto-suave: #8fa398;
+  --feltro-claro: #2f9a63;
+  --feltro: #1e7449;
+  --feltro-escuro: #0f4a2e;
+  --madeira-clara: #8a5a32;
+  --madeira: #5c3a1f;
+  --madeira-escura: #2e1c0e;
+  --destaque: #f5c542;
+  --destaque-escuro: #a8801f;
+  --perigo: #ef6a5b;
+  --perigo-escuro: #8f2f25;
   --sucesso: #5fd28d;
-  --carta: #fdfdfb;
-  --vermelho: #c8102e;
+  --sucesso-escuro: #2f7a50;
+  --azul: #6aa6ff;
+  --carta: #fbfaf5;
+  --vermelho: #d0182f;
   --preto: #1b1b1b;
+  --raio: 6px;
   color-scheme: dark;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  font-family: 'Pixelify Sans', ui-monospace, monospace;
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -28,24 +40,43 @@
 
 body {
   margin: 0;
-  background: var(--fundo);
+  background: radial-gradient(ellipse at 50% -10%, #17271e 0%, transparent 60%), var(--fundo);
+  background-attachment: fixed;
   color: var(--texto);
 }
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Botões e campos ---------- */
 
 button {
   font: inherit;
   cursor: pointer;
-  border: 1px solid var(--borda);
-  background: #24382c;
+  border: none;
+  background: var(--superficie-2);
   color: var(--texto);
-  padding: 0.55rem 0.9rem;
-  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  border-radius: var(--raio);
+  box-shadow: 0 3px 0 #0a0f0c;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease,
+    background 0.15s ease;
 }
 button:hover:not(:disabled) {
-  background: #2f4a3a;
+  background: #24322a;
+}
+button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0a0f0c;
 }
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 button:focus-visible,
@@ -54,14 +85,66 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+button.principal {
+  background: var(--destaque);
+  color: #1a1206;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 0 var(--destaque-escuro);
+}
+button.principal:hover:not(:disabled) {
+  background: #f8d46a;
+}
+button.principal:active:not(:disabled) {
+  box-shadow: 0 2px 0 var(--destaque-escuro);
+}
+
+button.secundario {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+button.secundario:hover:not(:disabled) {
+  background: var(--superficie-2);
+}
+button.secundario:active:not(:disabled) {
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+
+button.fantasma {
+  background: transparent;
+  box-shadow: none;
+  color: var(--texto-suave);
+  padding: 0.4rem 0.7rem;
+}
+button.fantasma:hover:not(:disabled) {
+  background: var(--superficie-2);
+  color: var(--texto);
+}
+button.fantasma:active:not(:disabled) {
+  box-shadow: none;
+}
+
 input {
   font: inherit;
-  background: #0c140f;
+  background: #080c0a;
   color: var(--texto);
-  border: 1px solid var(--borda);
-  border-radius: 8px;
-  padding: 0.5rem 0.7rem;
+  border: 2px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 0.55rem 0.75rem;
 }
+input:focus-visible {
+  outline-offset: 0;
+  border-color: var(--destaque);
+}
+input[type='range'] {
+  accent-color: var(--destaque);
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* ---------- Estrutura ---------- */
 
 .app {
   min-height: 100vh;
@@ -77,46 +160,58 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
+  padding: 0.9rem 0;
 }
-.topo h1 {
-  font-size: 1.3rem;
-  margin: 0.8rem 0;
+.logo {
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--destaque);
 }
+.conta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.apelido-logado {
+  font-weight: 500;
+}
+
 .servico {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--texto-suave);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 .luz {
+  display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
   background: var(--perigo);
+  box-shadow: 0 0 0 3px rgb(239 106 91 / 18%);
 }
 .luz.ligada {
   background: var(--sucesso);
+  box-shadow: 0 0 0 3px rgb(95 210 141 / 18%);
 }
 
 .rodape {
   margin-top: auto;
-  padding: 1.5rem 0 1rem;
-  font-size: 0.75rem;
-  color: var(--texto-suave);
+  padding: 2rem 0 1rem;
+  font-size: 0.8rem;
+  color: #5d6f65;
   text-align: center;
 }
 
 .linha {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
 .detalhe,
 .dica {
   color: var(--texto-suave);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 .erro {
   color: var(--perigo);
@@ -126,34 +221,54 @@ input {
   color: var(--destaque);
 }
 
+.cartao {
+  background: var(--superficie);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+}
+.cartao h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+.cartao label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+.cartao input {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ---------- Menu inicial ---------- */
 
 .menu-inicial {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.9rem;
   width: 100%;
-  max-width: 460px;
-  margin: 3rem auto 1rem;
+  max-width: 420px;
+  margin: 3.5rem auto 1rem;
   text-align: center;
 }
 .leque {
   display: flex;
   justify-content: center;
-  height: 96px;
-  margin-bottom: 0.6rem;
+  height: 100px;
+  margin-bottom: 0.8rem;
 }
 .leque .carta {
-  width: 58px;
-  height: 84px;
+  width: 60px;
+  height: 86px;
   margin: 0 -10px;
   transform-origin: 50% 140%;
   transition: transform 0.25s ease;
 }
 .leque .carta .valor,
 .leque .carta .naipe {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
 }
 .leque .carta:nth-child(1) {
   transform: rotate(-20deg);
@@ -188,13 +303,13 @@ input {
 
 .titulo-do-jogo {
   margin: 0;
-  font-size: clamp(2rem, 8vw, 3rem);
-  letter-spacing: 0.02em;
+  font-size: clamp(2.2rem, 9vw, 3.4rem);
+  line-height: 1.05;
   color: var(--destaque);
-  text-shadow: 0 2px 12px rgb(242 193 78 / 25%);
+  text-shadow: 0 4px 0 var(--destaque-escuro);
 }
 .subtitulo {
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.8rem;
   color: var(--texto-suave);
 }
 .formulario-do-menu {
@@ -204,50 +319,44 @@ input {
   text-align: left;
 }
 .formulario-do-menu label {
-  margin-bottom: 0;
+  margin-bottom: -0.2rem;
 }
-button.principal {
-  background: var(--destaque);
-  border-color: var(--destaque);
-  color: #1a1206;
-  font-weight: 700;
-  font-size: 1.05rem;
-  padding: 0.7rem 1rem;
-}
-button.principal:hover:not(:disabled) {
-  background: #f6d27a;
+.menu-inicial > button.secundario {
+  width: 100%;
 }
 .como-jogar {
   width: 100%;
   text-align: left;
 }
 .como-jogar h3 {
-  font-size: 0.95rem;
-  margin: 1rem 0 0.5rem;
+  font-size: 1rem;
+  margin: 1.1rem 0 0.5rem;
 }
 .passos {
   margin: 0;
   padding-left: 1.2rem;
   display: grid;
-  gap: 0.4rem;
-  font-size: 0.9rem;
+  gap: 0.45rem;
 }
 .ranking {
   margin: 0;
   padding-left: 1.6rem;
   display: grid;
   gap: 0.3rem;
-  font-size: 0.88rem;
 }
 .ranking li strong {
-  margin-right: 0.4rem;
+  margin-right: 0.45rem;
 }
 .menu-inicial .servico {
   justify-content: center;
 }
-
-.voltar-ao-menu {
-  justify-self: start;
+.boas-vindas {
+  margin: 0 0 0.3rem;
+  text-align: center;
+  color: var(--texto-suave);
+}
+.boas-vindas strong {
+  color: var(--destaque);
 }
 
 /* ---------- Conta (login e cadastro) ---------- */
@@ -255,22 +364,23 @@ button.principal:hover:not(:disabled) {
 .abas {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.3rem;
+  gap: 0.25rem;
   padding: 0.25rem;
   margin-bottom: 0.4rem;
-  background: #0c140f;
-  border: 1px solid var(--borda);
-  border-radius: 10px;
+  background: #080c0a;
+  border-radius: 8px;
 }
-.aba {
-  border: none;
+.aba,
+.aba:active:not(:disabled) {
   background: transparent;
+  box-shadow: none;
   color: var(--texto-suave);
+  transform: none;
 }
-.aba.ativa {
-  background: #24382c;
+.aba.ativa,
+.aba.ativa:hover:not(:disabled) {
+  background: var(--superficie-2);
   color: var(--texto);
-  font-weight: 600;
 }
 .acesso input[aria-invalid='true'] {
   border-color: var(--perigo);
@@ -278,56 +388,23 @@ button.principal:hover:not(:disabled) {
 .acesso .erro {
   margin: 0;
 }
-.boas-vindas {
-  margin: 0 0 0.2rem;
-  text-align: center;
-}
-.boas-vindas strong {
-  color: var(--destaque);
-}
-.conta {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  flex-wrap: wrap;
-}
-.apelido-logado {
-  font-weight: 600;
-  color: var(--destaque);
-}
 
 /* ---------- Lobby ---------- */
 
 .lobby {
   display: grid;
-  gap: 1rem;
+  gap: 0.8rem;
   max-width: 560px;
   width: 100%;
-  margin: 1rem auto;
+  margin: 1.5rem auto;
 }
-.cartao {
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
-}
-.cartao h2 {
-  margin-top: 0;
-  font-size: 1.1rem;
-}
-.cartao label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-.cartao input {
-  flex: 1;
-  min-width: 0;
+.voltar-ao-menu {
+  justify-self: start;
 }
 .lista-de-mesas {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 0.8rem;
   display: grid;
   gap: 0.5rem;
 }
@@ -336,13 +413,20 @@ button.principal:hover:not(:disabled) {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid var(--borda);
-  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  background: var(--superficie-2);
+  border-radius: 8px;
 }
 .lista-de-mesas li > div {
   display: grid;
   gap: 0.15rem;
+}
+.lista-de-mesas button:not(:disabled) {
+  background: var(--sucesso-escuro);
+  box-shadow: 0 3px 0 #1a4a30;
+}
+.lista-de-mesas button:hover:not(:disabled) {
+  background: #388f5e;
 }
 
 /* ---------- Mesa ---------- */
@@ -358,32 +442,60 @@ button.principal:hover:not(:disabled) {
   gap: 1rem;
   flex-wrap: wrap;
 }
+.titulo-da-mesa {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
 .cabecalho-da-mesa h2 {
   margin: 0;
-  font-size: 1.1rem;
-}
-button.secundario {
-  background: transparent;
+  font-size: 1.2rem;
 }
 
 .area-de-jogo {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 1.2rem;
   align-items: start;
 }
 
+/*
+ * O feltro usa duas camadas de fundo: o pano verde (até a borda interna) e a madeira
+ * (na área da borda). Assim o aro acompanha o formato arredondado da mesa.
+ */
 .feltro {
   position: relative;
   aspect-ratio: 16 / 10;
-  min-height: 340px;
-  border-radius: 50% / 46%;
-  background: radial-gradient(ellipse at center, var(--feltro) 0%, var(--feltro-escuro) 75%);
-  border: 14px solid var(--madeira);
+  margin: 46px 48px 56px;
+  border: 18px solid transparent;
+  border-radius: 999px;
+  background:
+    repeating-conic-gradient(rgb(0 0 0 / 5%) 0 25%, transparent 0 50%) 0 0 / 6px 6px padding-box,
+    radial-gradient(
+        ellipse at 50% 42%,
+        var(--feltro-claro) 0%,
+        var(--feltro) 45%,
+        var(--feltro-escuro) 100%
+      )
+      padding-box,
+    linear-gradient(180deg, var(--madeira-clara) 0%, var(--madeira) 45%, var(--madeira-escura) 100%)
+      border-box;
   box-shadow:
-    inset 0 0 40px rgb(0 0 0 / 45%),
-    0 10px 30px rgb(0 0 0 / 40%);
-  margin: 40px 50px;
+    0 0 0 3px #1a0f07,
+    0 18px 0 -6px rgb(0 0 0 / 35%),
+    0 24px 50px rgb(0 0 0 / 50%),
+    inset 0 0 0 3px rgb(0 0 0 / 35%),
+    inset 0 0 70px rgb(0 0 0 / 45%);
+}
+/* Linha de apostas. */
+.feltro::before {
+  content: '';
+  position: absolute;
+  inset: 13% 9%;
+  border: 2px solid rgb(255 255 255 / 9%);
+  border-radius: 999px;
+  pointer-events: none;
 }
 
 .centro {
@@ -402,12 +514,13 @@ button.secundario {
 }
 .pote {
   margin: 0;
-  background: rgb(0 0 0 / 35%);
-  padding: 0.3rem 0.8rem;
+  background: rgb(0 0 0 / 40%);
+  padding: 0.3rem 0.9rem;
   border-radius: 999px;
-  font-weight: 600;
+  font-weight: 500;
   max-width: 80%;
   text-align: center;
+  color: var(--destaque);
 }
 
 .assento {
@@ -416,66 +529,91 @@ button.secundario {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  z-index: 1;
+  gap: 0;
+  z-index: 2;
 }
 .assento.fora {
-  opacity: 0.5;
+  opacity: 0.45;
 }
 .placa {
-  background: rgb(10 18 13 / 92%);
-  border: 2px solid var(--borda);
-  border-radius: 10px;
-  padding: 0.3rem 0.6rem;
-  min-width: 118px;
+  position: relative;
+  z-index: 1;
+  margin-top: -10px;
+  background: rgb(8 12 10 / 92%);
+  border: 2px solid #2a3830;
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  min-width: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 35%);
 }
 .assento.voce .placa {
-  border-color: #6aa6ff;
+  border-color: var(--azul);
 }
 .assento.da-vez .placa {
   border-color: var(--destaque);
-  box-shadow: 0 0 14px rgb(242 193 78 / 55%);
+  animation: pulso 1.4s ease-in-out infinite;
 }
 .assento.ganhou .placa {
   border-color: var(--sucesso);
+  box-shadow:
+    0 4px 0 rgb(0 0 0 / 35%),
+    0 0 18px rgb(95 210 141 / 45%);
+}
+@keyframes pulso {
+  50% {
+    box-shadow:
+      0 4px 0 rgb(0 0 0 / 35%),
+      0 0 18px rgb(245 197 66 / 55%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assento.da-vez .placa {
+    animation: none;
+    box-shadow: 0 0 14px rgb(245 197 66 / 55%);
+  }
 }
 .nome {
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .stack {
   color: var(--destaque);
 }
 .estado {
   color: var(--texto-suave);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
 }
 .ganho {
   color: var(--sucesso);
   font-weight: 700;
 }
 .selo {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   background: #3b5bdb;
-  border-radius: 4px;
-  padding: 1px 4px;
+  border-radius: 3px;
+  padding: 0 4px;
 }
 .selo.alerta {
-  background: var(--perigo);
+  background: var(--perigo-escuro);
 }
 .selo.destaque {
   background: var(--perigo);
   margin-top: 2px;
 }
 .cronometro {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--destaque);
 }
 .cronometro.acabando {
@@ -484,37 +622,69 @@ button.secundario {
 }
 .botao-dealer {
   position: absolute;
-  right: -14px;
-  top: 34px;
+  right: -12px;
+  bottom: 4px;
+  z-index: 2;
   width: 22px;
   height: 22px;
   border-radius: 50%;
   background: #fff;
   color: #000;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.75rem;
   display: grid;
   place-items: center;
+  box-shadow: 0 2px 0 #9a9a9a;
+}
+
+/* Fichas apostadas, na frente de cada jogador (posição: ver Aposta em Mesa.tsx). */
+.feltro {
+  --raio-x: 0.64;
+  --raio-y: 0.85;
+  --ao-lado: 100px;
 }
 .aposta {
-  background: var(--destaque);
-  color: #000;
-  font-weight: 700;
-  font-size: 0.75rem;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgb(0 0 0 / 45%);
+  color: var(--texto);
+  font-size: 0.82rem;
+  font-weight: 500;
   border-radius: 999px;
-  padding: 1px 8px;
+  padding: 2px 9px 2px 3px;
+  white-space: nowrap;
+}
+.aposta.na-frente {
+  left: calc(50% + var(--cos) * var(--raio-x) * 44%);
+  top: calc(50% + var(--sin) * var(--raio-y) * 40%);
+}
+.aposta.ao-lado {
+  left: calc(50% + var(--ao-lado));
+}
+.aposta::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--destaque);
+  border: 3px dashed #fff8;
+  box-sizing: border-box;
 }
 
 .cartas-do-jogador {
   display: flex;
-  gap: 3px;
-  min-height: 52px;
+  gap: 2px;
+  min-height: 46px;
 }
 
 .carta {
-  width: 46px;
-  height: 66px;
-  border-radius: 6px;
+  width: 48px;
+  height: 68px;
+  border-radius: 5px;
   background: var(--carta);
   display: inline-flex;
   flex-direction: column;
@@ -522,22 +692,22 @@ button.secundario {
   justify-content: center;
   font-weight: 700;
   line-height: 1;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 30%);
   border: 2px solid transparent;
 }
 .carta .valor {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
 }
 .carta .naipe {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
 }
 .carta.pequena {
-  width: 36px;
-  height: 52px;
+  width: 38px;
+  height: 54px;
 }
 .carta.pequena .valor,
 .carta.pequena .naipe {
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 .carta.vermelha {
   color: var(--vermelho);
@@ -546,31 +716,42 @@ button.secundario {
   color: var(--preto);
 }
 .carta.verso {
-  background: repeating-linear-gradient(45deg, #8c1d2c 0 6px, #a8283a 6px 12px);
-  border-color: #fff;
+  background: repeating-conic-gradient(#b02a3d 0 25%, #8c1d2c 0 50%) 0 0 / 8px 8px;
+  border: 3px solid #fff;
 }
 .carta.espaco {
-  background: rgb(0 0 0 / 18%);
+  background: rgb(0 0 0 / 15%);
   box-shadow: none;
-  border: 2px dashed rgb(255 255 255 / 18%);
+  border: 2px dashed rgb(255 255 255 / 15%);
 }
 .carta.destaque {
   border-color: var(--sucesso);
-  box-shadow: 0 0 10px rgb(95 210 141 / 80%);
+  box-shadow:
+    0 3px 0 rgb(0 0 0 / 30%),
+    0 0 12px rgb(95 210 141 / 80%);
+}
+
+/* ---------- Painéis ao lado da mesa ---------- */
+
+.lateral {
+  display: grid;
+  gap: 0.8rem;
+  align-content: start;
 }
 
 .historico {
   background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 0.6rem 0.8rem;
-  max-height: 260px;
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  max-height: 380px;
   overflow-y: auto;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
 }
 .historico h3 {
-  margin: 0 0 0.4rem;
-  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--texto);
 }
 .historico ol {
   list-style: none;
@@ -584,50 +765,78 @@ button.secundario {
 }
 .evento-pote {
   color: var(--sucesso);
-  font-weight: 600;
+  font-weight: 500;
 }
 .evento-inicio {
   color: var(--texto-suave);
   border-top: 1px solid var(--borda);
-  padding-top: 0.3rem;
+  padding-top: 0.35rem;
+  margin-top: 0.15rem;
+}
+.evento-inicio:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
 }
 
+/* ---------- Barra de ações ---------- */
+
 .painel-do-jogador {
-  min-height: 92px;
+  min-height: 84px;
   background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: grid;
+  align-content: center;
 }
 .status {
-  margin: 0.4rem 0;
+  margin: 0;
   color: var(--texto-suave);
+  text-align: center;
 }
 .barra-de-acoes {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.7rem;
 }
 .botoes {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
 }
 .botoes button {
-  min-width: 110px;
-  font-weight: 600;
+  flex: 1 1 120px;
+  font-weight: 500;
+  font-size: 1.02rem;
+  padding: 0.75rem 1rem;
 }
 button.desistir {
-  border-color: var(--perigo);
+  background: transparent;
+  color: var(--perigo);
+  box-shadow: inset 0 0 0 2px var(--perigo-escuro);
+}
+button.desistir:hover:not(:disabled) {
+  background: rgb(239 106 91 / 10%);
+}
+button.desistir:active:not(:disabled) {
+  box-shadow: inset 0 0 0 2px var(--perigo-escuro);
 }
 button.subir {
-  background: #2b5d42;
+  background: var(--sucesso-escuro);
+  box-shadow: 0 3px 0 #1a4a30;
+}
+button.subir:hover:not(:disabled) {
+  background: #388f5e;
 }
 button.all-in {
-  background: #7a2a22;
+  background: var(--perigo-escuro);
+  box-shadow: 0 3px 0 #5a1c16;
+}
+button.all-in:hover:not(:disabled) {
+  background: #a83a2e;
 }
 .valor-da-aposta {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -639,25 +848,29 @@ button.all-in {
   width: 110px;
 }
 button.atalho {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--borda);
+  color: var(--texto-suave);
+}
+button.atalho:hover:not(:disabled) {
+  color: var(--texto);
+}
+button.atalho:active:not(:disabled) {
+  box-shadow: inset 0 0 0 2px var(--borda);
 }
 
 /* ---------- Coach IA ---------- */
 
-.lateral {
-  display: grid;
-  gap: 1rem;
-  align-content: start;
-}
 .coach {
   background: var(--superficie);
-  border: 1px solid #3b5bdb;
-  border-radius: 12px;
-  padding: 0.7rem 0.9rem;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  font-size: 0.88rem;
   display: grid;
-  gap: 0.5rem;
+  gap: 0.55rem;
+  box-shadow: inset 3px 0 0 #4c6fe0;
 }
 .coach p {
   margin: 0;
@@ -676,8 +889,11 @@ button.atalho {
   gap: 0.35rem;
   align-items: center;
   color: var(--texto-suave);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   cursor: pointer;
+}
+.interruptor input {
+  accent-color: #4c6fe0;
 }
 .coach-dica,
 .coach-legenda,
@@ -687,18 +903,22 @@ button.atalho {
 }
 .coach-rodape,
 .recomendacao-fonte {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 .coach-pensando {
   color: var(--destaque);
 }
 button.coach-pedir {
-  background: #2c3f8f;
+  background: #2f46a0;
+  box-shadow: 0 3px 0 #1c2b66;
+}
+button.coach-pedir:hover:not(:disabled) {
+  background: #3a55bd;
 }
 .barra-equity {
   display: flex;
   height: 10px;
-  border-radius: 999px;
+  border-radius: 3px;
   overflow: hidden;
   background: #4a2228;
 }
@@ -714,47 +934,49 @@ button.coach-pedir {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 .possibilidades li {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.45rem;
   align-items: baseline;
 }
 .selo-avaliacao {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  border-radius: 4px;
-  padding: 1px 5px;
+  border-radius: 3px;
+  padding: 0 5px;
   flex-shrink: 0;
 }
 .avaliacao-boa .selo-avaliacao {
-  background: #1f6b43;
+  background: var(--sucesso-escuro);
 }
 .avaliacao-neutra .selo-avaliacao {
   background: #7a6420;
 }
 .avaliacao-ruim .selo-avaliacao {
-  background: #7a2a22;
+  background: var(--perigo-escuro);
 }
 .recomendacao {
   border-top: 1px solid var(--borda);
-  padding-top: 0.5rem;
+  padding-top: 0.55rem;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 .recomendacao-resumo {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 .conceito {
-  background: rgb(242 193 78 / 10%);
-  border-radius: 8px;
-  padding: 0.35rem 0.5rem;
+  background: rgb(245 197 66 / 9%);
+  border-radius: 6px;
+  padding: 0.4rem 0.55rem;
 }
 
-@media (max-width: 860px) {
+/* ---------- Celular ---------- */
+
+@media (max-width: 980px) {
   /* No celular: mesa, botões de jogada, coach e, por último, o histórico. */
   .area-de-jogo,
   .lateral {
@@ -762,6 +984,15 @@ button.coach-pedir {
   }
   .feltro {
     order: 1;
+    margin: 56px 6px 60px;
+    min-height: 320px;
+    aspect-ratio: 4 / 5;
+    border-width: 14px;
+    border-radius: 140px;
+  }
+  .feltro::before {
+    inset: 9% 12%;
+    border-radius: 110px;
   }
   .painel-do-jogador {
     order: 2;
@@ -773,37 +1004,46 @@ button.coach-pedir {
     order: 4;
     max-height: 220px;
   }
-  .feltro {
-    margin: 50px 4px;
-    min-height: 300px;
-    aspect-ratio: 4 / 5;
-    border-radius: 45% / 35%;
-  }
   .cartas-comunitarias {
     gap: 4px;
   }
   .cartas-comunitarias .carta {
-    width: 30px;
-    height: 44px;
+    width: 32px;
+    height: 46px;
   }
   .placa {
-    min-width: 92px;
-    font-size: 0.72rem;
+    min-width: 90px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  .nome {
+    max-width: 90px;
   }
   .carta {
-    width: 34px;
-    height: 50px;
+    width: 36px;
+    height: 52px;
   }
   .carta .valor,
   .carta .naipe {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
   .carta.pequena {
-    width: 28px;
-    height: 40px;
+    width: 30px;
+    height: 42px;
+  }
+  .carta.pequena .valor,
+  .carta.pequena .naipe {
+    font-size: 0.85rem;
+  }
+  .feltro {
+    --raio-x: 0.3;
+    --raio-y: 0.8;
+    --ao-lado: 76px;
+  }
+  .aposta {
+    font-size: 0.72rem;
   }
   .botoes button {
-    min-width: 0;
-    flex: 1 1 calc(50% - 0.5rem);
+    flex: 1 1 calc(50% - 0.6rem);
   }
 }

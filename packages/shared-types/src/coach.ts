@@ -43,8 +43,10 @@ export interface AnaliseDoCoach {
 export interface RecomendacaoDoCoach {
   readonly numeroDaMao: number;
   readonly momento: number;
-  /** `ia` = gerada pelo agente (Claude); `regras` = coach determinístico (sem IA). */
+  /** `ia` = gerada pelo agente (Claude ou modelo local); `regras` = coach determinístico. */
   readonly fonte: 'ia' | 'regras';
+  /** Modelo de IA que gerou a recomendação, ou null quando veio das regras. */
+  readonly modelo: string | null;
   readonly acao: AcaoSugerida;
   readonly valor: Fichas | null;
   readonly confianca: 'baixa' | 'media' | 'alta';

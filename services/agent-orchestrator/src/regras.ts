@@ -10,6 +10,16 @@ import type {
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
+/**
+ * Confiança pela distância entre a equity e o limite da decisão (o necessário para pagar
+ * ou, sem aposta a pagar, 50%): longe do limite = decisão clara.
+ */
+export function confiancaPelaMargem(a: AnaliseDoCoach): 'baixa' | 'media' | 'alta' {
+  const limite = a.equityNecessaria ?? 0.5;
+  const margem = Math.abs(a.equity - limite);
+  return margem >= 0.15 ? 'alta' : margem >= 0.05 ? 'media' : 'baixa';
+}
+
 export function recomendarPorRegras(a: AnaliseDoCoach, aviso: string | null): RecomendacaoDoCoach {
   const boas = a.possibilidades.filter((p) => p.avaliacao === 'boa');
   const prioridade =
@@ -23,18 +33,14 @@ export function recomendarPorRegras(a: AnaliseDoCoach, aviso: string | null): Re
     a.possibilidades.find((p) => p.acao === 'desistir') ??
     (a.possibilidades[0] as PossibilidadeDeJogada);
 
-  const margem =
-    a.equityNecessaria === null
-      ? Math.abs(a.equity - 0.5)
-      : Math.abs(a.equity - a.equityNecessaria);
-
   return {
     numeroDaMao: a.numeroDaMao,
     momento: a.momento,
     fonte: 'regras',
+    modelo: null,
     acao: escolhida.acao,
     valor: escolhida.valor,
-    confianca: margem >= 0.15 ? 'alta' : margem >= 0.05 ? 'media' : 'baixa',
+    confianca: confiancaPelaMargem(a),
     resumo: `${rotulo(escolhida)}: ${escolhida.motivo}`,
     explicacao:
       `Você tem ${a.maoAtual} e cerca de ${pct(a.equity)} de equity contra ${a.oponentes} ` +

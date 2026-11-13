@@ -204,8 +204,8 @@ function Recomendacao(props: {
   return (
     <div className="recomendacao">
       <p className="recomendacao-fonte">
-        {r.fonte === 'ia' ? 'Recomendação da IA (Claude)' : 'Recomendação por regras'} · confiança{' '}
-        {r.confianca}
+        {r.fonte === 'ia' ? `Recomendação da IA (${r.modelo ?? 'IA'})` : 'Recomendação por regras'}{' '}
+        · confiança {r.confianca}
       </p>
       <p className="recomendacao-resumo">{r.resumo}</p>
       {r.explicacao && <p>{r.explicacao}</p>}

@@ -66,16 +66,18 @@ export function App() {
   return (
     <div className="app">
       <header className="topo">
-        <h1>
+        <h1 className="logo">
           <span aria-hidden="true">♠</span> Agentic Poker
         </h1>
         <div className="conta">
-          <p className="servico" title="Microsserviço que atende esta tela">
-            <span className={conexao.conectado ? 'luz ligada' : 'luz'} aria-hidden="true" />
-            game-engine · WebSocket {conexao.conectado ? 'conectado' : 'desconectado'}
-          </p>
+          <span
+            className={conexao.conectado ? 'luz ligada' : 'luz'}
+            role="img"
+            aria-label={conexao.conectado ? 'Conectado ao servidor' : 'Sem conexão com o servidor'}
+            title={conexao.conectado ? 'Conectado ao servidor' : 'Sem conexão com o servidor'}
+          />
           <span className="apelido-logado">{usuario.apelido}</span>
-          <button type="button" className="secundario" onClick={() => void sairDaConta()}>
+          <button type="button" className="fantasma" onClick={() => void sairDaConta()}>
             Sair
           </button>
         </div>

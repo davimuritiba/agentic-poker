@@ -1,11 +1,3 @@
-/**
- * Cartas do baralho francês de 52 cartas usado no Texas Hold'em.
- *
- * Não usamos `enum` (o projeto compila com `erasableSyntaxOnly`): cada conjunto de
- * valores é um array `as const`, e o tipo é derivado dele. Assim o mesmo array serve
- * para checagem de tipos, para iterar (montar o baralho) e para gerar dados de teste.
- */
-
 export const NAIPES = ['paus', 'ouros', 'copas', 'espadas'] as const;
 
 export type Naipe = (typeof NAIPES)[number];

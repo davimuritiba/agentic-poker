@@ -7,7 +7,7 @@ import type {
   Resposta,
   VisaoDaMesa,
 } from '@poker/shared-types';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { descreverEvento, fichas } from '../formatacao.js';
 import { BarraDeAcoes } from './BarraDeAcoes.js';
 import { CartaVisual, EspacoDeCarta } from './CartaVisual.js';
@@ -45,7 +45,7 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
   return (
     <main className="tela-da-mesa">
       <div className="cabecalho-da-mesa">
-        <div>
+        <div className="titulo-da-mesa">
           <h2>{visao.nome}</h2>
           <span className="detalhe">
             Blinds {fichas(visao.smallBlind)}/{fichas(visao.bigBlind)}
@@ -53,10 +53,10 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
           </span>
         </div>
         <div className="linha">
-          <button onClick={() => void chamarBot()} disabled={vagas === 0}>
+          <button className="fantasma" onClick={() => void chamarBot()} disabled={vagas === 0}>
             + Bot
           </button>
-          <button className="secundario" onClick={() => void sair()}>
+          <button className="fantasma" onClick={() => void sair()}>
             Sair da mesa
           </button>
         </div>
@@ -79,7 +79,25 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
             />
           ))}
 
+          {visao.jogadores
+            .filter((j) => j.apostaNaRodada > 0)
+            .map((j) => (
+              <Aposta
+                key={j.id}
+                valor={j.apostaNaRodada}
+                nome={j.nome}
+                direcao={direcaoNaMesa(j.assento, eu?.assento ?? 0, visao.maxJogadores)}
+              />
+            ))}
+
           <div className="centro">
+            <p className="pote">
+              {visao.fase === 'aguardando'
+                ? 'Aguardando jogadores'
+                : visao.fase === 'encerrada'
+                  ? resumoDoResultado(visao)
+                  : `Pote: ${fichas(visao.pote + apostasNaRodada)}`}
+            </p>
             <div className="cartas-comunitarias">
               {Array.from({ length: 5 }, (_, i) => {
                 const c = visao.cartasNaMesa[i];
@@ -90,13 +108,6 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
                 );
               })}
             </div>
-            <p className="pote">
-              {visao.fase === 'aguardando'
-                ? 'Aguardando jogadores'
-                : visao.fase === 'encerrada'
-                  ? resumoDoResultado(visao)
-                  : `Pote: ${fichas(visao.pote + apostasNaRodada)}`}
-            </p>
           </div>
         </div>
 
@@ -179,7 +190,6 @@ function Assento(props: {
           D
         </span>
       )}
-      {j.apostaNaRodada > 0 && <span className="aposta">{fichas(j.apostaNaRodada)}</span>}
     </div>
   );
 }
@@ -196,7 +206,7 @@ function Cronometro({ prazo }: { prazo: number }) {
       className={segundos <= 5 ? 'cronometro acabando' : 'cronometro'}
       aria-label={`${segundos} segundos`}
     >
-      ⏱ {segundos}s
+      {segundos}s
     </span>
   );
 }
@@ -225,14 +235,46 @@ function Historico({ visao }: { visao: VisaoDaMesa }) {
   );
 }
 
-/** Posição em volta da mesa oval, com o próprio jogador sempre embaixo, no centro. */
-function posicaoNaTela(assento: number, meuAssento: number, total: number) {
+/** Direção do assento a partir do centro da mesa, com o próprio jogador sempre embaixo. */
+function direcaoNaMesa(assento: number, meuAssento: number, total: number) {
   const relativo = (assento - meuAssento + total) % total;
   const angulo = Math.PI / 2 + (relativo * 2 * Math.PI) / total;
-  return {
-    left: `${50 + 44 * Math.cos(angulo)}%`,
-    top: `${50 + 40 * Math.sin(angulo)}%`,
-  };
+  return { cos: Math.cos(angulo), sin: Math.sin(angulo) };
+}
+
+/** Posição em volta da mesa oval. */
+function posicaoNaTela(assento: number, meuAssento: number, total: number) {
+  const { cos, sin } = direcaoNaMesa(assento, meuAssento, total);
+  return { left: `${50 + 44 * cos}%`, top: `${50 + 40 * sin}%` };
+}
+
+/**
+ * Fichas apostadas na rodada. Nos lugares laterais ficam entre o jogador e o centro (a
+ * distância vem do CSS, para o celular poder aproximar); nos lugares de cima e de baixo
+ * ficam ao lado do jogador, para não cobrir as cartas comunitárias nem as dele.
+ */
+function Aposta({
+  valor,
+  nome,
+  direcao,
+}: {
+  valor: number;
+  nome: string;
+  direcao: { cos: number; sin: number };
+}) {
+  const vertical = Math.abs(direcao.cos) < 0.2;
+  const estilo = vertical
+    ? { top: `${50 + 40 * direcao.sin}%` }
+    : ({ '--cos': direcao.cos, '--sin': direcao.sin } as CSSProperties);
+  return (
+    <span
+      className={vertical ? 'aposta ao-lado' : 'aposta na-frente'}
+      style={estilo}
+      title={`Aposta de ${nome}`}
+    >
+      {fichas(valor)}
+    </span>
+  );
 }
 
 function resumoDoResultado(visao: VisaoDaMesa): string {

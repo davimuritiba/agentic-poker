@@ -4,45 +4,98 @@
  * do jogador: o orquestrador nunca recebe cartas ocultas.
  *
  *   POST /coach/analise       → números imediatos (equity, pot odds, possibilidades)
- *   POST /coach/recomendacao  → recomendação do agente (Claude), ou por regras
+ *   POST /coach/recomendacao  → recomendação do agente (Ollama ou Claude), ou por regras
  *   GET  /saude
  */
-import { existsSync } from 'node:fs';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
-import Anthropic from '@anthropic-ai/sdk';
-import type { AnaliseDoCoach, VisaoDaMesa } from '@poker/shared-types';
-import { recomendarComIA, type CriarMensagem } from './agente.js';
+import type { AnaliseDoCoach, RecomendacaoDoCoach, VisaoDaMesa } from '@poker/shared-types';
 import { analisar } from './analise.js';
 import { montarContexto, type ContextoDoJogador } from './contexto.js';
+import { FilaCheia, FilaDaIA } from './fila.js';
+import { semIA } from './ferramentas.js';
+import { escolherProvedor } from './provedor.js';
 
 const PORTA = Number(process.env.AGENT_ORCHESTRATOR_PORT ?? 3002);
-const MODELO = process.env.COACH_MODELO ?? 'claude-opus-5-5';
+const PRAZO_MS = Number(process.env.COACH_PRAZO_MS ?? 25_000);
 const LIMITE_DO_CORPO = 256 * 1024;
+const VALIDADE_MS = 60_000;
 
-const { criar, motivoSemIA } = prepararIA();
+const provedor = escolherProvedor();
+const fila = new FilaDaIA(provedor.concorrencia, Number(process.env.COACH_FILA_MAX ?? 4));
 
-function prepararIA(): { criar: CriarMensagem | null; motivoSemIA?: string } {
-  if (process.env.COACH_IA === 'desligado')
-    return { criar: null, motivoSemIA: 'IA desligada (COACH_IA=desligado).' };
-  // O SDK só descobre a falta de credencial na hora da chamada; aqui checamos as fontes
-  // que ele aceita (chave, token, perfil do `ant auth login`, federação de identidade).
-  const temCredencial =
-    process.env.ANTHROPIC_API_KEY ||
-    process.env.ANTHROPIC_AUTH_TOKEN ||
-    process.env.ANTHROPIC_PROFILE ||
-    process.env.ANTHROPIC_FEDERATION_RULE_ID ||
-    existsSync(join(homedir(), '.config', 'anthropic'));
-  if (!temCredencial) {
-    return {
-      criar: null,
-      motivoSemIA:
-        'IA não configurada: defina ANTHROPIC_API_KEY para ativar o agente. Usando o coach por regras.',
-    };
+/**
+ * A mesma decisão (mesa, jogador, mão, momento) reaproveita a mesma análise e a mesma
+ * recomendação: os números da tela e os do agente são idênticos, e pedir de novo não
+ * gasta a IA outra vez.
+ */
+const analisesRecentes = new Map<string, { analise: AnaliseDoCoach; expira: number }>();
+const recomendacoesRecentes = new Map<
+  string,
+  { recomendacao: Promise<RecomendacaoDoCoach>; expira: number }
+>();
+
+function chaveDaDecisao(visao: VisaoDaMesa, contexto: ContextoDoJogador): string {
+  return `${visao.id}:${visao.voce?.id}:${contexto.numeroDaMao}:${contexto.momento}`;
+}
+
+function limparVencidos(agora: number): void {
+  for (const mapa of [analisesRecentes, recomendacoesRecentes]) {
+    for (const [chave, item] of mapa) if (item.expira < agora) mapa.delete(chave);
   }
-  const cliente = new Anthropic({ maxRetries: 1 });
-  return { criar: (params, opcoes) => cliente.beta.messages.create(params, opcoes) };
+}
+
+function analiseDaDecisao(chave: string, contexto: ContextoDoJogador): AnaliseDoCoach {
+  const guardada = analisesRecentes.get(chave);
+  if (guardada) return guardada.analise;
+  const analise = analisar(contexto);
+  analisesRecentes.set(chave, { analise, expira: Date.now() + VALIDADE_MS });
+  return analise;
+}
+
+function recomendacaoDaDecisao(
+  chave: string,
+  contexto: ContextoDoJogador,
+  analise: AnaliseDoCoach,
+): Promise<RecomendacaoDoCoach> {
+  const guardada = recomendacoesRecentes.get(chave);
+  if (guardada) return guardada.recomendacao;
+  const recomendacao = gerarRecomendacao(contexto, analise);
+  recomendacoesRecentes.set(chave, { recomendacao, expira: Date.now() + VALIDADE_MS });
+  return recomendacao;
+}
+
+async function gerarRecomendacao(
+  contexto: ContextoDoJogador,
+  analise: AnaliseDoCoach,
+): Promise<RecomendacaoDoCoach> {
+  const inicio = Date.now();
+  const sinal = AbortSignal.timeout(PRAZO_MS); // conta o tempo na fila também
+  const r = await fila
+    .executar(() => provedor.recomendar(contexto, analise, sinal), sinal)
+    .catch((erro: unknown) =>
+      semIA(
+        analise,
+        erro instanceof FilaCheia
+          ? 'O Coach IA está ocupado com outros jogadores; usando o coach por regras.'
+          : 'O Coach IA demorou demais; usando o coach por regras.',
+      ),
+    );
+  console.log(
+    JSON.stringify({
+      servico: 'agent-orchestrator',
+      agente: 'coach',
+      provedor: provedor.nome,
+      modelo: r.recomendacao.modelo,
+      mao: analise.numeroDaMao,
+      fonte: r.recomendacao.fonte,
+      ferramentas: r.recomendacao.ferramentasUsadas,
+      ms: Date.now() - inicio,
+      tokens: { entrada: r.tokensDeEntrada, saida: r.tokensDeSaida },
+      fila: { emAndamento: fila.emAndamento, esperando: fila.naFila },
+      aviso: r.recomendacao.aviso,
+    }),
+  );
+  return r.recomendacao;
 }
 
 const http = createServer((req, res) => {
@@ -52,31 +105,19 @@ const http = createServer((req, res) => {
   });
 });
 
-/**
- * A mesma decisão (mesa, jogador, mão, momento) reaproveita a mesma análise: assim os
- * números da tela e os que o agente usa são idênticos, sem rodar o Monte Carlo duas vezes.
- */
-const analisesRecentes = new Map<string, { analise: AnaliseDoCoach; expira: number }>();
-
-function analiseDaDecisao(visao: VisaoDaMesa, contexto: ContextoDoJogador): AnaliseDoCoach {
-  const agora = Date.now();
-  for (const [chave, item] of analisesRecentes)
-    if (item.expira < agora) analisesRecentes.delete(chave);
-
-  const chave = `${visao.id}:${visao.voce?.id}:${contexto.numeroDaMao}:${contexto.momento}`;
-  const guardada = analisesRecentes.get(chave);
-  if (guardada) return guardada.analise;
-  const analise = analisar(contexto);
-  analisesRecentes.set(chave, { analise, expira: agora + 60_000 });
-  return analise;
-}
-
 async function tratar(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method === 'GET' && req.url === '/saude') {
     return responder(res, 200, {
       servico: 'agent-orchestrator',
       ok: true,
-      ia: criar ? MODELO : null,
+      provedor: provedor.nome,
+      modelo: provedor.modelo,
+      fila: {
+        emAndamento: fila.emAndamento,
+        esperando: fila.naFila,
+        limite: provedor.concorrencia,
+      },
+      ...(await provedor.verificar()),
     });
   }
   if (
@@ -94,28 +135,11 @@ async function tratar(req: IncomingMessage, res: ServerResponse): Promise<void> 
   const montado = montarContexto(visao);
   if (!montado.ok) return responder(res, 422, { motivo: montado.motivo });
 
-  const inicio = Date.now();
-  const analise = analiseDaDecisao(visao, montado.contexto);
+  limparVencidos(Date.now());
+  const chave = chaveDaDecisao(visao, montado.contexto);
+  const analise = analiseDaDecisao(chave, montado.contexto);
   if (req.url === '/coach/analise') return responder(res, 200, analise);
-
-  const r = await recomendarComIA(montado.contexto, analise, {
-    criar,
-    modelo: MODELO,
-    motivoSemIA,
-  });
-  console.log(
-    JSON.stringify({
-      servico: 'agent-orchestrator',
-      agente: 'coach',
-      mao: analise.numeroDaMao,
-      fonte: r.recomendacao.fonte,
-      ferramentas: r.recomendacao.ferramentasUsadas,
-      ms: Date.now() - inicio,
-      tokens: { entrada: r.tokensDeEntrada, saida: r.tokensDeSaida },
-      aviso: r.recomendacao.aviso,
-    }),
-  );
-  return responder(res, 200, r.recomendacao);
+  return responder(res, 200, await recomendacaoDaDecisao(chave, montado.contexto, analise));
 }
 
 async function lerJson(req: IncomingMessage): Promise<unknown> {
@@ -139,9 +163,11 @@ function responder(res: ServerResponse, status: number, corpo: unknown): void {
 }
 
 http.listen(PORTA, '127.0.0.1', () => {
-  console.log(
-    `[agent-orchestrator] ouvindo em http://127.0.0.1:${PORTA} · coach: ${criar ? `IA (${MODELO})` : 'regras'}`,
-  );
+  const descricao = provedor.modelo ? `${provedor.nome} (${provedor.modelo})` : provedor.nome;
+  console.log(`[agent-orchestrator] ouvindo em http://127.0.0.1:${PORTA} · coach: ${descricao}`);
+  void provedor.verificar().then((situacao) => {
+    if (situacao.dica) console.warn(`[agent-orchestrator] atenção: ${String(situacao.dica)}`);
+  });
 });
 
 const desligar = () => http.close();

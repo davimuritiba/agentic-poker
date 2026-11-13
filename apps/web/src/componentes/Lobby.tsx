@@ -20,7 +20,7 @@ export function Lobby({ mesas, conectado, entrar, voltar }: Props) {
 
   return (
     <main className="lobby">
-      <button type="button" className="secundario voltar-ao-menu" onClick={voltar}>
+      <button type="button" className="fantasma voltar-ao-menu" onClick={voltar}>
         ← Menu inicial
       </button>
       <section className="cartao">
