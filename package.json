@@ -1,19 +1,26 @@
 {
   "name": "agentic-poker",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.15.9",
   "engines": {
     "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @poker/game-engine --filter @poker/auth --filter @poker/agent-orchestrator --filter @poker/web run dev",
+    "build": "tsc -b && pnpm --filter @poker/web run build",
+    "start": "pnpm --parallel --filter @poker/game-engine --filter @poker/auth --filter @poker/agent-orchestrator run start",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose down",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b && tsc -p tsconfig.tests.json && tsc -p apps/web",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

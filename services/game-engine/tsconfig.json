@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../packages/shared-types"
+    },
+    {
+      "path": "../../packages/hand-evaluator"
+    },
+    {
+      "path": "../../packages/deck"
+    },
+    {
+      "path": "../../packages/action-validator"
+    },
+    {
+      "path": "../../packages/sessao"
+    }
+  ]
+}

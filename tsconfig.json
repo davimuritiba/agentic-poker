@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "files": [],
+  "references": [
+    {
+      "path": "packages/shared-types"
+    },
+    {
+      "path": "packages/hand-evaluator"
+    },
+    {
+      "path": "packages/deck"
+    },
+    {
+      "path": "packages/action-validator"
+    },
+    {
+      "path": "packages/equity"
+    },
+    {
+      "path": "packages/sessao"
+    },
+    {
+      "path": "services/game-engine"
+    },
+    {
+      "path": "services/agent-orchestrator"
+    },
+    {
+      "path": "services/auth"
+    }
+  ]
+}
