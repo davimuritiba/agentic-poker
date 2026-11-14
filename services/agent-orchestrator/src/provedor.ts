@@ -9,22 +9,32 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import Anthropic from '@anthropic-ai/sdk';
-import type { AnaliseDoCoach } from '@poker/shared-types';
-import { recomendarComIA } from './agente.js';
-import { clienteOllama, recomendarComOllama } from './agente-ollama.js';
+import type { AnaliseDoCoach, LeituraDoCoach } from '@poker/shared-types';
+import { lerComClaude, recomendarComIA, type CriarMensagem } from './agente.js';
+import { clienteOllama, lerComOllama, recomendarComOllama } from './agente-ollama.js';
 import type { ContextoDoJogador } from './contexto.js';
-import { semIA, type ResultadoDoAgente } from './ferramentas.js';
+import { semIA, type AoProgredir, type ResultadoDoAgente } from './ferramentas.js';
+import { lerPorRegras } from './regras.js';
 
 export interface Provedor {
   readonly nome: 'ollama' | 'claude' | 'regras';
   readonly modelo: string | null;
   /** Quantos pedidos à IA podem rodar ao mesmo tempo. */
   readonly concorrencia: number;
+  /** `aoProgredir` recebe, ao vivo, os passos do agente e o texto sendo escrito. */
   recomendar(
     c: ContextoDoJogador,
     analise: AnaliseDoCoach,
     sinal: AbortSignal,
+    aoProgredir?: AoProgredir,
   ): Promise<ResultadoDoAgente>;
+  /** Comentário curto sobre a mão, fora da vez do jogador. */
+  ler(
+    c: ContextoDoJogador,
+    analise: AnaliseDoCoach,
+    sinal: AbortSignal,
+    aoProgredir?: AoProgredir,
+  ): Promise<LeituraDoCoach>;
   /** Situação da IA, para /saude e para o aviso ao subir o serviço. */
   verificar(): Promise<Record<string, unknown>>;
 }
@@ -60,7 +70,10 @@ function provedorOllama(env: Ambiente, concorrencia: number): Provedor {
     nome: 'ollama',
     modelo,
     concorrencia,
-    recomendar: (c, analise, sinal) => recomendarComOllama(c, analise, { chamar, modelo, sinal }),
+    recomendar: (c, analise, sinal, aoProgredir) =>
+      recomendarComOllama(c, analise, { chamar, modelo, sinal, aoProgredir }),
+    ler: (c, analise, sinal, aoProgredir) =>
+      lerComOllama(c, analise, { chamar, modelo, sinal, aoProgredir }),
     async verificar() {
       try {
         const r = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(2_000) });
@@ -87,16 +100,14 @@ function provedorClaude(env: Ambiente, concorrencia: number): Provedor {
     );
   }
   const cliente = new Anthropic({ maxRetries: 1 });
+  const criar: CriarMensagem = (params, opcoes) => cliente.beta.messages.create(params, opcoes);
   return {
     nome: 'claude',
     modelo,
     concorrencia,
-    recomendar: (c, analise, sinal) =>
-      recomendarComIA(c, analise, {
-        criar: (params, opcoes) => cliente.beta.messages.create(params, opcoes),
-        modelo,
-        sinal,
-      }),
+    recomendar: (c, analise, sinal, aoProgredir) =>
+      recomendarComIA(c, analise, { criar, modelo, sinal, aoProgredir }),
+    ler: (c, analise, sinal) => lerComClaude(c, analise, { criar, modelo, sinal }),
     verificar: async () => ({ claude: 'configurado' }),
   };
 }
@@ -107,6 +118,7 @@ function provedorRegras(motivo: string): Provedor {
     modelo: null,
     concorrencia: 64,
     recomendar: async (_c, analise) => semIA(analise, motivo),
+    ler: async (_c, analise) => lerPorRegras(analise, motivo),
     verificar: async () => ({ motivo }),
   };
 }

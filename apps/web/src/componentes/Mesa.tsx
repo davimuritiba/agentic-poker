@@ -2,30 +2,46 @@ import type {
   Acao,
   AnaliseDoCoach,
   Carta,
+  EscritaDoCoach,
   JogadorVisivel,
+  LeituraDoCoach,
+  PedidoAoCoach,
   RecomendacaoDoCoach,
   Resposta,
   VisaoDaMesa,
 } from '@poker/shared-types';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { descreverEvento, fichas } from '../formatacao.js';
+import { alternarSom, useSomLigado, useSonsDaMesa } from '../sons.js';
 import { BarraDeAcoes } from './BarraDeAcoes.js';
-import { CartaVisual, EspacoDeCarta } from './CartaVisual.js';
+import { CartaVisual, EspacoDeCarta, chaveDaCarta } from './CartaVisual.js';
 import { CoachIA } from './CoachIA.js';
+import { CamadaDeFichas, PilhaDeFichas } from './Fichas.js';
 
 interface Props {
   visao: VisaoDaMesa;
   agir: (acao: Acao) => Promise<Resposta>;
   sair: () => Promise<Resposta>;
   adicionarBot: () => Promise<Resposta>;
-  pedirCoach: () => Promise<Resposta>;
-  coach: { analise: AnaliseDoCoach | null; recomendacao: RecomendacaoDoCoach | null };
+  pedirCoach: (pedido: PedidoAoCoach) => Promise<Resposta>;
+  coach: {
+    analise: AnaliseDoCoach | null;
+    recomendacao: RecomendacaoDoCoach | null;
+    leitura: LeituraDoCoach | null;
+    escrita: EscritaDoCoach | null;
+  };
 }
+
+/** Intervalo entre cartas que viram juntas (flop, cartas da mão); o som acompanha. */
+export const INTERVALO_DO_FLOP = 120;
 
 const mesmaCarta = (a: Carta, b: Carta) => a.valor === b.valor && a.naipe === b.naipe;
 
 export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Props) {
   const [aviso, setAviso] = useState<string | null>(null);
+  const feltro = useRef<HTMLDivElement>(null);
+  const somLigado = useSomLigado();
+  useSonsDaMesa(visao, INTERVALO_DO_FLOP);
   const eu = visao.jogadores.find((j) => j.id === visao.voce?.id);
   const apostasNaRodada = visao.jogadores.reduce((soma, j) => soma + j.apostaNaRodada, 0);
   const vagas = visao.maxJogadores - visao.jogadores.length;
@@ -53,6 +69,14 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
           </span>
         </div>
         <div className="linha">
+          <button
+            className={somLigado ? 'fantasma botao-som' : 'fantasma botao-som mudo'}
+            onClick={alternarSom}
+            aria-pressed={somLigado}
+            title={somLigado ? 'Desligar efeitos sonoros' : 'Ligar efeitos sonoros'}
+          >
+            ♪ Som
+          </button>
           <button className="fantasma" onClick={() => void chamarBot()} disabled={vagas === 0}>
             + Bot
           </button>
@@ -64,7 +88,7 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
       {aviso && <p className="erro">{aviso}</p>}
 
       <div className="area-de-jogo">
-        <div className="feltro">
+        <div className="feltro" ref={feltro}>
           {visao.jogadores.map((j) => (
             <Assento
               key={j.id}
@@ -84,6 +108,7 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
             .map((j) => (
               <Aposta
                 key={j.id}
+                id={j.id}
                 valor={j.apostaNaRodada}
                 nome={j.nome}
                 direcao={direcaoNaMesa(j.assento, eu?.assento ?? 0, visao.maxJogadores)}
@@ -91,24 +116,52 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
             ))}
 
           <div className="centro">
-            <p className="pote">
-              {visao.fase === 'aguardando'
-                ? 'Aguardando jogadores'
-                : visao.fase === 'encerrada'
-                  ? resumoDoResultado(visao)
-                  : `Pote: ${fichas(visao.pote + apostasNaRodada)}`}
+            <p className="pote" data-pote>
+              {visao.fase === 'aguardando' ? (
+                'Aguardando jogadores'
+              ) : visao.fase === 'encerrada' ? (
+                resumoDoResultado(visao)
+              ) : (
+                <>
+                  <PilhaDeFichas valor={visao.pote} />
+                  Pote: {fichas(visao.pote + apostasNaRodada)}
+                </>
+              )}
             </p>
             <div className="cartas-comunitarias">
               {Array.from({ length: 5 }, (_, i) => {
                 const c = visao.cartasNaMesa[i];
+                // O flop vira uma carta de cada vez; turn e river viram sozinhos.
                 return c ? (
-                  <CartaVisual key={i} carta={c} destaque={destacar(c)} />
+                  <CartaVisual
+                    key={chaveDaCarta(c)}
+                    carta={c}
+                    destaque={destacar(c)}
+                    animacao="virar"
+                    atraso={i < 3 ? i * INTERVALO_DO_FLOP : 0}
+                  />
                 ) : (
-                  <EspacoDeCarta key={i} />
+                  <EspacoDeCarta key={`vazio-${i}`} />
                 );
               })}
             </div>
           </div>
+
+          <CamadaDeFichas visao={visao} feltro={feltro} />
+        </div>
+
+        {/* Logo abaixo da mesa, na mesma coluna: a barra lateral não empurra as ações. */}
+        <div className="painel-do-jogador">
+          {visao.voce?.acoes ? (
+            <BarraDeAcoes
+              acoes={visao.voce.acoes}
+              poteTotal={visao.pote + apostasNaRodada}
+              maiorAposta={visao.maiorAposta}
+              agir={agir}
+            />
+          ) : (
+            <p className="status">{mensagemDeStatus(visao, eu)}</p>
+          )}
         </div>
 
         <div className="lateral">
@@ -117,25 +170,14 @@ export function Mesa({ visao, agir, sair, adicionarBot, pedirCoach, coach }: Pro
               visao={visao}
               analise={coach.analise}
               recomendacao={coach.recomendacao}
+              leitura={coach.leitura}
+              escrita={coach.escrita}
               pedirCoach={pedirCoach}
               agir={agir}
             />
           )}
           <Historico visao={visao} />
         </div>
-      </div>
-
-      <div className="painel-do-jogador">
-        {visao.voce?.acoes ? (
-          <BarraDeAcoes
-            acoes={visao.voce.acoes}
-            poteTotal={visao.pote + apostasNaRodada}
-            maiorAposta={visao.maiorAposta}
-            agir={agir}
-          />
-        ) : (
-          <p className="status">{mensagemDeStatus(visao, eu)}</p>
-        )}
       </div>
     </main>
   );
@@ -163,13 +205,27 @@ function Assento(props: {
     .join(' ');
 
   return (
-    <div className={classes} style={props.posicao}>
+    <div className={classes} style={props.posicao} data-jogador={j.id}>
       <div className="cartas-do-jogador">
         {j.cartas
           ? j.cartas.map((c, i) => (
-              <CartaVisual key={i} carta={c} pequena destaque={props.destacar(c)} />
+              <CartaVisual
+                key={chaveDaCarta(c)}
+                carta={c}
+                pequena
+                destaque={props.destacar(c)}
+                animacao="virar"
+                atraso={i * INTERVALO_DO_FLOP}
+              />
             ))
-          : Array.from({ length: j.quantidadeDeCartas }, (_, i) => <CartaVisual key={i} pequena />)}
+          : Array.from({ length: j.quantidadeDeCartas }, (_, i) => (
+              <CartaVisual
+                key={`verso-${i}`}
+                pequena
+                animacao="dar"
+                atraso={i * INTERVALO_DO_FLOP}
+              />
+            ))}
       </div>
       <div className="placa">
         <span className="nome">
@@ -254,10 +310,12 @@ function posicaoNaTela(assento: number, meuAssento: number, total: number) {
  * ficam ao lado do jogador, para não cobrir as cartas comunitárias nem as dele.
  */
 function Aposta({
+  id,
   valor,
   nome,
   direcao,
 }: {
+  id: string;
   valor: number;
   nome: string;
   direcao: { cos: number; sin: number };
@@ -271,7 +329,9 @@ function Aposta({
       className={vertical ? 'aposta ao-lado' : 'aposta na-frente'}
       style={estilo}
       title={`Aposta de ${nome}`}
+      data-aposta={id}
     >
+      <PilhaDeFichas valor={valor} />
       {fichas(valor)}
     </span>
   );

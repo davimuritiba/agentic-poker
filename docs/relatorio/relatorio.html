@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório do Projeto — Agentic Poker</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 20mm 18mm;
+    @bottom-right { content: counter(page); font: 9pt Helvetica, Arial, sans-serif; color: #777; }
+    @bottom-left { content: "Agentic Poker · Relatório do Projeto"; font: 9pt Helvetica, Arial, sans-serif; color: #999; }
+  }
+  @page :first { @bottom-right { content: none; } @bottom-left { content: none; } }
+  :root { --verde: #1f6b45; --verde-claro: #e9f4ee; --tinta: #1d2420; --cinza: #5b655f; --linha: #d4dcd7; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.5 Georgia, "Times New Roman", serif; color: var(--tinta); margin: 0; }
+  h1, h2, h3, h4, .capa, table, figcaption, .nota, .sumario { font-family: Helvetica, Arial, sans-serif; }
+  h1 { font-size: 19pt; color: var(--verde); margin: 0 0 10pt; padding-bottom: 5pt; border-bottom: 2px solid var(--verde); break-after: avoid; }
+  h2 { font-size: 13.5pt; color: var(--verde); margin: 16pt 0 6pt; break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 12pt 0 4pt; break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 10pt 0 3pt; color: var(--cinza); break-after: avoid; }
+  p { margin: 0 0 7pt; text-align: justify; }
+  ul, ol { margin: 0 0 8pt; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+  section.capitulo { break-before: page; }
+  a { color: var(--verde); }
+  code { font: 8.8pt Menlo, Consolas, monospace; background: #f1f4f2; padding: 0 2pt; border-radius: 2pt; }
+  pre { font: 7.6pt/1.42 Menlo, Consolas, monospace; background: #f6f8f7; border: 1px solid var(--linha); border-left: 3px solid var(--verde);
+        padding: 6pt 8pt; margin: 4pt 0 10pt; white-space: pre-wrap; word-break: break-word; }
+  pre .com { color: #5f7a6b; font-style: italic; }
+  .arquivo { font: 600 8pt Helvetica, Arial, sans-serif; color: var(--cinza); margin: 8pt 0 0; break-after: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 4pt 0 11pt; font-size: 8.8pt; break-inside: auto; }
+  th, td { border: 1px solid var(--linha); padding: 3.5pt 5pt; text-align: left; vertical-align: top; }
+  th { background: var(--verde-claro); color: var(--verde); font-weight: 700; }
+  tr { break-inside: avoid; }
+  figure { margin: 6pt 0 12pt; break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; max-height: 84mm; border: 1px solid var(--linha); border-radius: 3pt; }
+  .passo { break-inside: avoid; }
+  .passo figure { margin: 4pt 0 8pt; }
+  table.compacta { font-size: 8.2pt; } table.compacta td, table.compacta th { padding: 2.2pt 5pt; }
+  figure.celular img { max-height: 120mm; }
+  figcaption { font-size: 8.8pt; color: var(--cinza); margin-top: 4pt; text-align: left; }
+  .nota { font-size: 9pt; background: #fff8e6; border: 1px solid #ecd9a4; border-left: 3px solid #d9a521; padding: 6pt 9pt; margin: 6pt 0 10pt; border-radius: 2pt; }
+  .nota.verde { background: var(--verde-claro); border-color: #b9dcc8; border-left-color: var(--verde); }
+  .ok { color: #1f6b45; font-weight: 700; } .parcial { color: #a06d00; font-weight: 700; } .pendente { color: #9b2c2c; font-weight: 700; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+
+  /* Capa */
+  .capa { height: 257mm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; }
+  .capa .topo { font-size: 10.5pt; color: var(--cinza); letter-spacing: .5pt; text-transform: uppercase; line-height: 1.7; }
+  .capa .titulo { font-size: 36pt; font-weight: 800; color: var(--verde); margin: 0; letter-spacing: -.5pt; }
+  .capa .sub { font-size: 13.5pt; color: var(--tinta); margin-top: 6pt; }
+  .capa .naipes { font-size: 26pt; letter-spacing: 8pt; color: var(--verde); margin-bottom: 10pt; }
+  .capa .naipes .v { color: #b3261e; }
+  .capa .links { font-size: 10.5pt; border: 1px solid var(--linha); border-radius: 4pt; padding: 10pt 14pt; text-align: left; margin: 0 auto; width: 150mm; line-height: 1.8; }
+  .capa .links b { display: inline-block; width: 34mm; color: var(--cinza); }
+  .capa .autoria { font-size: 10.5pt; line-height: 1.8; }
+  .sumario ol { list-style: none; padding: 0; font-size: 10.5pt; }
+  .sumario li { border-bottom: 1px dotted var(--linha); padding: 3pt 0; }
+  .sumario li li { border: 0; padding: 1pt 0 1pt 14pt; font-size: 9.5pt; color: var(--cinza); }
+  svg text { font-family: Helvetica, Arial, sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ============================ CAPA ============================ -->
+<div class="capa">
+  <div class="topo">Engenharia de Software · Relatório do Projeto<br>Desenvolvimento baseado em Microsserviços e Componentes de Software</div>
+  <div>
+    <div class="naipes">♠<span class="v">♥</span>♣<span class="v">♦</span></div>
+    <p class="titulo" style="text-align:center">Agentic Poker</p>
+    <div class="sub">Texas Hold'em No-Limit com fichas virtuais, microsserviços<br>e um Coach de IA agêntica em tempo real</div>
+  </div>
+  <div class="links">
+    <div><b>GitHub</b> <a href="https://github.com/davimuritiba/agentic-poker">https://github.com/davimuritiba/agentic-poker</a></div>
+    <div><b>Branch</b> <code>feat/sprint-1</code> (README na raiz do repositório)</div>
+    <div><b>Vídeo do jogo</b> [inserir o link do vídeo antes da entrega]</div>
+  </div>
+  <div class="autoria">
+    Aluno(s): ______________________________________________<br>
+    Professor(a): __________________________________________<br>
+    Novembro de 2026
+  </div>
+</div>
+
+<!-- ============================ SUMÁRIO ============================ -->
+<section class="capitulo sumario">
+  <h1>Sumário</h1>
+  <ol>
+    <li><b>Parte 1 — Modelagem</b></li>
+    <li>1. Enunciado do projeto</li>
+    <li>2. Metodologia ágil utilizada: Scrum</li>
+    <li>3. Técnicas de reuso de software: componentes e microsserviços</li>
+    <li>4. Desenvolvimento segundo a metodologia e as técnicas de reuso</li>
+    <li>5. Product Backlog e Sprint Backlog</li>
+    <li>6. Arquitetura do sistema
+      <ol>
+        <li>6.1 Arquitetura de microsserviços</li>
+        <li>6.2 API Gateway (código documentado)</li>
+        <li>6.3 Especificação de cada microsserviço e componente</li>
+        <li>6.4 Sistema de recomendação (Coach IA)</li>
+        <li>6.5 Microsserviços em execução</li>
+      </ol>
+    </li>
+    <li><b>Parte 2 — Implementação</b></li>
+    <li>7. Tecnologias por microsserviço</li>
+    <li>8. Telas do sistema, passo a passo</li>
+    <li>9. Código no GitHub e instruções de execução</li>
+    <li>10. Referências bibliográficas</li>
+    <li>11. Vídeo do jogo</li>
+  </ol>
+</section>
+
+<!-- ============================ 1 ============================ -->
+<section class="capitulo">
+<h1>1. Enunciado do projeto</h1>
+<p>Desenvolver um jogo digital de poker <b>Texas Hold'em No-Limit</b>, não violento e jogado apenas com <b>fichas virtuais</b>, sem valor em dinheiro. O sistema deve ser construído com <b>microsserviços</b> e <b>componentes de software</b> como técnicas de reuso, seguindo a metodologia ágil <b>Scrum</b>. Um agente de <b>IA agêntica</b>, o <i>Coach IA</i>, analisa a situação do jogador em tempo real e recomenda jogadas. Para isso, usa apenas as informações que o próprio jogador vê na tela: as cartas dele, as cartas da mesa, os stacks, as apostas e o histórico público da mão.</p>
+
+<h3>Escopo</h3>
+<ul>
+  <li><b>Dentro do escopo:</b> mesas de 2 a 6 jogadores; contas de jogador com login; lobby com várias mesas; jogo em tempo real por WebSocket; bots oponentes identificados como bots; Coach IA com recomendação de jogada, explicação e leitura da mão em tempo real, em três perfis (agressivo, equilibrado e seguro).</li>
+  <li><b>Fora do escopo:</b> dinheiro real, torneios com prêmio em dinheiro e variantes de poker além do Hold'em.</li>
+</ul>
+
+<h3>Critério de sucesso</h3>
+<p>Uma mão completa roda de ponta a ponta entre jogadores e bots, com regras corretas (side pots, empates e all-ins incompletos). Cada microsserviço aparece em execução e tem o contrato de API documentado. O Coach IA nunca recebe cartas ocultas.</p>
+
+<h3>Requisitos não funcionais principais</h3>
+<table>
+  <thead><tr><th style="width:28%">Requisito</th><th>Como foi atendido</th></tr></thead>
+  <tr><td>Servidor autoritativo</td><td>O estado da mão só existe no <code>game-engine</code>. Cada jogador recebe uma <i>visão filtrada</i> da mesa: cartas dos adversários só aparecem quando reveladas no showdown, e o baralho nunca sai do servidor.</td></tr>
+  <tr><td>Embaralhamento seguro</td><td>O baralho usa Fisher-Yates com RNG criptográfico (<code>crypto.randomInt</code>), no componente <code>deck</code>.</td></tr>
+  <tr><td>Regras testadas</td><td>Há 287 testes automatizados (Vitest), incluindo testes baseados em propriedades (fast-check) para o avaliador de mãos, os side pots e o validador de ações.</td></tr>
+  <tr><td>IA sem trapaça</td><td>O <code>agent-orchestrator</code> recebe exatamente a visão que o jogador vê; por construção, não tem acesso às cartas ocultas.</td></tr>
+  <tr><td>Disponibilidade do Coach</td><td>Se a IA estiver ocupada, lenta ou fora do ar, o coach responde por regras determinísticas e nunca deixa o jogador sem resposta.</td></tr>
+  <tr><td>Segurança de contas</td><td>Senhas com hash scrypt; sessão em JWT HS256 dentro de um cookie httpOnly e SameSite=Lax; limite de tentativas de login.</td></tr>
+  <tr><td>Ética</td><td>Fichas apenas virtuais, aviso de idade, bots sempre identificados e nenhuma mecânica de compra de fichas.</td></tr>
+</table>
+</section>
+
+<!-- ============================ 2 ============================ -->
+<section class="capitulo">
+<h1>2. Metodologia ágil utilizada: Scrum</h1>
+<p>O projeto segue <b>Scrum</b> com sprints curtas. Cada sprint termina numa <b>fatia jogável</b> (<i>vertical slice</i>): algo que dá para abrir no navegador e jogar. Entregar algo jogável cedo valida o motor de poker e a arquitetura antes de o sistema crescer. Para bugs e tarefas de operação, usa-se um quadro <b>Kanban</b> à parte, sem esperar a próxima sprint.</p>
+
+<h3>Papéis</h3>
+<table>
+  <thead><tr><th style="width:24%">Papel</th><th>Responsabilidade neste projeto</th></tr></thead>
+  <tr><td>Product Owner</td><td>Mantém o Product Backlog (histórias H1 a H12) priorizado pelo valor para o jogador e pelo critério de sucesso do enunciado.</td></tr>
+  <tr><td>Scrum Master</td><td>Garante os eventos, remove impedimentos (por exemplo, a troca da IA paga por uma IA local e gratuita) e cuida da definição de pronto.</td></tr>
+  <tr><td>Time de desenvolvimento</td><td>Implementa, testa e demonstra as histórias da sprint. Desenvolvimento assistido por IA (Claude Code) foi usado como ferramenta de produtividade, sempre com revisão e testes.</td></tr>
+</table>
+
+<h3>Eventos e artefatos</h3>
+<ul>
+  <li><b>Sprint:</b> duração planejada de 2 semanas.</li>
+  <li><b>Planejamento da sprint:</b> histórias do topo do Product Backlog são quebradas em tarefas técnicas (Sprint Backlog), organizadas por microsserviço e componente.</li>
+  <li><b>Daily:</b> acompanhamento do quadro e dos impedimentos.</li>
+  <li><b>Revisão da sprint:</b> demonstração com <i>playtest</i> (jogar contra bots e com o Coach ativo) e ajuste do backlog.</li>
+  <li><b>Retrospectiva:</b> o que melhorar no processo. Exemplo real desta sprint: medir a latência do Coach antes de otimizar, o que levou à redução de 22–30 s para 11–15 s por recomendação.</li>
+</ul>
+
+<h3>Definição de pronto (DoD)</h3>
+<ol>
+  <li>Código em TypeScript estrito, sem erros de tipo (<code>pnpm typecheck</code>).</li>
+  <li>Testes unitários e, quando cabe, testes baseados em propriedades (<code>pnpm test</code>).</li>
+  <li>Lint e formatação (<code>pnpm lint</code>, <code>pnpm format:check</code>).</li>
+  <li>CI verde no GitHub Actions, que roda os quatro passos acima a cada push e pull request.</li>
+  <li>Código documentado (comentários explicando o <i>porquê</i>) e serviço com rota <code>/saude</code> e logs estruturados em JSON.</li>
+  <li>Demonstrado jogando no navegador.</li>
+</ol>
+</section>
+
+<!-- ============================ 3 ============================ -->
+<section class="capitulo">
+<h1>3. Técnicas de reuso de software</h1>
+<p>O reuso combina duas técnicas complementares:</p>
+<ul>
+  <li><b>Componentes de software:</b> bibliotecas internas com interface definida, testes próprios e nenhuma dependência de rede. Ficam em <code>packages/</code>, são publicadas no monorepo como pacotes <code>@poker/*</code> e são importadas por vários serviços e pelo cliente.</li>
+  <li><b>Microsserviços:</b> processos independentes, cada um com sua responsabilidade, porta, contrato de API e, quando precisa, seu próprio banco. Ficam em <code>services/</code> (e o cliente em <code>apps/web</code>) e são reaproveitados por meio de suas APIs (HTTP, NDJSON e WebSocket).</li>
+</ul>
+
+<h2>3.1 Componentes de software</h2>
+<table>
+  <thead><tr><th style="width:19%">Componente</th><th>Responsabilidade (interface principal)</th><th style="width:26%">Reusado por</th></tr></thead>
+  <tr><td><code>shared-types</code></td><td>Tipos e contratos compartilhados: <code>Carta</code>, <code>Acao</code>, <code>VisaoDaMesa</code>, eventos do Socket.IO (<code>EventosDoCliente</code> / <code>EventosDoServidor</code>), tipos do Coach e o leitor de linhas NDJSON <code>lerLinhas</code>.</td><td>Todos os serviços, todos os componentes e o cliente web</td></tr>
+  <tr><td><code>deck</code></td><td>Baralho de 52 cartas e embaralhamento Fisher-Yates com RNG criptográfico (<code>embaralhar</code>, <code>baralhoEmbaralhado</code>, <code>distribuir</code>).</td><td>game-engine</td></tr>
+  <tr><td><code>hand-evaluator</code></td><td>Melhor mão de 5 entre 5–7 cartas, desempates e vencedores (<code>avaliarMao</code>, <code>vencedores</code>, <code>descreverMao</code>).</td><td>game-engine (showdown e bots), equity, agent-orchestrator</td></tr>
+  <tr><td><code>action-validator</code></td><td>Regras de aposta do No-Limit: ações permitidas, aumento mínimo, all-in incompleto que não reabre a ação (<code>acoesPermitidas</code>, <code>validarAcao</code>).</td><td>game-engine (motor)</td></tr>
+  <tr><td><code>equity</code></td><td>Equity por simulação Monte Carlo usando só as cartas visíveis (<code>calcularEquity</code>, <code>equityNecessaria</code>).</td><td>agent-orchestrator (Coach IA)</td></tr>
+  <tr><td><code>sessao</code></td><td>Sessão do jogador: emissão e verificação de JWT HS256 e leitura do cookie (<code>assinarSessao</code>, <code>verificarSessao</code>, <code>lerSessaoDoCookie</code>).</td><td>auth (emite) e game-engine (verifica)</td></tr>
+</table>
+
+<h2>3.2 Microsserviços</h2>
+<table>
+  <thead><tr><th style="width:21%">Microsserviço</th><th>Responsabilidade</th><th style="width:21%">Interface</th></tr></thead>
+  <tr><td><code>game-engine</code> (:3001)</td><td>API Gateway (porta de entrada única), lobby, mesas ao vivo, motor de regras autoritativo e bots.</td><td>HTTP e WebSocket (Socket.IO)</td></tr>
+  <tr><td><code>auth</code> (:3003)</td><td>Cadastro, login, logout e “quem sou eu”; contas no PostgreSQL.</td><td>HTTP/JSON <code>/api/auth/*</code></td></tr>
+  <tr><td><code>agent-orchestrator</code> (:3002)</td><td>Hospeda os agentes de IA do Coach: análise numérica, recomendação, leitura da mão e fila da IA.</td><td>HTTP/JSON e NDJSON (streaming)</td></tr>
+  <tr><td><code>web</code> (:5173 em dev)</td><td>Cliente React: telas de acesso, menu, lobby, mesa e painel do Coach.</td><td>Navegador</td></tr>
+</table>
+<p>Serviços de infraestrutura reaproveitados como estão: <b>PostgreSQL 17</b> (em Docker), usado pelo <code>auth</code>, e <b>Ollama</b>, que serve o modelo de linguagem local <code>qwen3:8b</code> para o Coach. Opcionalmente, a API da Anthropic (Claude) pode ser usada no lugar do Ollama.</p>
+
+<div class="nota verde"><b>Exemplo de reuso nos dois níveis.</b> O componente <code>hand-evaluator</code> é escrito e testado uma vez e usado em três lugares: no showdown do motor, na força da mão dos bots e dentro do componente <code>equity</code>, que por sua vez é usado pelo Coach. Já o microsserviço <code>agent-orchestrator</code> é reaproveitado por meio da API: o <code>game-engine</code> não sabe se do outro lado há Ollama, Claude ou só regras.</div>
+</section>
+
+<!-- ============================ 4 ============================ -->
+<section class="capitulo">
+<h1>4. Desenvolvimento segundo a metodologia e as técnicas de reuso</h1>
+<p>O plano inicial previa seis sprints, cada uma acrescentando microsserviços (seção 5). O desenvolvimento começou pela base reutilizável: primeiro os componentes, depois os serviços que os usam. Assim, cada serviço novo já nasceu sobre peças testadas. Durante a Sprint 1, o time puxou para frente histórias de prioridade média (bots e Coach IA), porque o motor e os componentes ficaram prontos antes do previsto e a revisão com playtest mostrou que o Coach era o diferencial do produto. Essa repriorização é registrada no backlog.</p>
+
+<h3>Incremento 1 — Esqueleto do monorepo e DevOps (commit <code>151b4f2</code>)</h3>
+<p>Monorepo com <b>pnpm workspaces</b>, TypeScript estrito com <i>project references</i>, Vitest, ESLint, Prettier e <b>CI no GitHub Actions</b> desde o primeiro dia. Cada pacote exporta a condição <code>@poker/source</code>, que permite rodar o código-fonte direto em desenvolvimento, sem compilar os componentes antes. Essa decisão de reuso baratea a criação de componentes novos.</p>
+
+<h3>Incremento 2 — Componentes do domínio (parte da Sprint 1)</h3>
+<p>Em ordem de dependência: <code>shared-types</code> (cartas, ações e notação), <code>deck</code> (Fisher-Yates com RNG criptográfico), <code>hand-evaluator</code> (avaliador próprio, comparado em testes contra a biblioteca de referência <i>pokersolver</i>) e <code>action-validator</code> (regras de aposta, incluindo o caso clássico do all-in incompleto). Cada componente tem testes baseados em propriedades. Exemplo: “embaralhar nunca perde nem duplica cartas” e “a soma dos potes é igual ao total apostado”.</p>
+
+<h3>Incremento 3 — Jogo jogável (commit <code>71bb722</code>)</h3>
+<p>O <code>game-engine</code> compõe os componentes num <b>motor puro</b>, uma máquina de estados <code>(estado, ação) → estado</code> sem rede nem relógio, o que o torna trivial de testar. Por cima do motor vêm a <code>MesaAoVivo</code> (timers da vez, bots, entre mãos), o <code>Lobby</code> com três mesas e o servidor Socket.IO, que envia a cada jogador a <i>sua</i> visão. O cliente React reaproveita os tipos de <code>shared-types</code>, então cliente e servidor compartilham o mesmo contrato e o compilador acusa qualquer divergência.</p>
+
+<h3>Incremento 4 — Coach IA (agent-orchestrator)</h3>
+<p>Novo microsserviço que reaproveita os componentes <code>equity</code> e <code>hand-evaluator</code> como <b>ferramentas</b> do agente. A primeira versão usava a API da Anthropic (Claude). Na revisão surgiu o impedimento do custo, e o provedor passou a ser escolhido por configuração: <b>Ollama</b> com um modelo local e gratuito (<code>qwen3:8b</code>) por padrão, Claude como opção e “só regras” como último recurso. Como o contrato do microsserviço não mudou, o <code>game-engine</code> não precisou de nenhuma alteração. A retrospectiva levou a medições de latência e a três otimizações: menos rodadas do agente, saída estruturada e confiança calculada pelos números. O tempo caiu de 22–30 s para 11–15 s.</p>
+
+<h3>Incremento 5 — Contas com PostgreSQL (auth + sessao)</h3>
+<p>Microsserviço <code>auth</code> com banco próprio (PostgreSQL em Docker) e migrações versionadas. A sessão virou um componente (<code>sessao</code>) reusado por dois serviços: o <code>auth</code> <i>emite</i> o token e o <code>game-engine</code> apenas o <i>verifica</i>, sem consultar o banco. Esse é o padrão <i>database per service</i> na prática.</p>
+
+<h3>Incremento 6 — Perfis do Coach e escrita ao vivo (commit <code>29f00b5</code> e seguintes)</h3>
+<p>Três perfis de coach (agressivo, equilibrado e seguro), cada um com seus limites numéricos. Leitura da mão em tempo real a cada carta nova. <b>Streaming</b> do texto da IA: o Ollama gera tokens, o orquestrador repassa o progresso em NDJSON, o <code>game-engine</code> emite <code>coach:escrevendo</code> e o jogador vê o texto sendo escrito na lateral da tela (as primeiras palavras aparecem em cerca de 5 s). Para isso foi criado mais um utilitário reutilizável em <code>shared-types</code>: o leitor de linhas NDJSON <code>lerLinhas</code>, usado pelo orquestrador (ao ler o Ollama) e pelo <code>game-engine</code> (ao ler o orquestrador).</p>
+
+<h3>Métricas ao fim da sprint</h3>
+<table>
+  <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+  <tr><td>Componentes de software</td><td>6 pacotes em <code>packages/</code></td></tr>
+  <tr><td>Microsserviços próprios</td><td>3 serviços + 1 cliente web (mais PostgreSQL e Ollama como infraestrutura)</td></tr>
+  <tr><td>Testes automatizados</td><td>287 testes em 25 arquivos, todos passando</td></tr>
+  <tr><td>Código-fonte</td><td>cerca de 9.400 linhas de TypeScript (sem contar testes)</td></tr>
+  <tr><td>Latência do Coach (Ollama, Mac M-series)</td><td>números instantâneos; primeiras palavras em ~5 s; recomendação completa em 11–15 s</td></tr>
+</table>
+</section>
+
+<!-- ============================ 5 ============================ -->
+<section class="capitulo">
+<h1>5. Product Backlog e Sprint Backlog</h1>
+<h2>5.1 Product Backlog</h2>
+<p>O backlog está ordenado por prioridade, com o estado ao fim da Sprint 1. As histórias H6 e H8 foram puxadas para frente na revisão (ver seção 4).</p>
+<table>
+  <thead><tr><th style="width:6%">ID</th><th>História de usuário</th><th style="width:10%">Prioridade</th><th style="width:9%">Sprint</th><th style="width:22%">Estado</th></tr></thead>
+  <tr><td>H1</td><td>Como jogador, quero jogar uma mão completa de Hold'em com regras corretas.</td><td>Alta</td><td>1</td><td><span class="ok">Feito</span>: motor puro, side pots, empates</td></tr>
+  <tr><td>H2</td><td>Como jogador, quero criar uma conta e entrar no jogo.</td><td>Alta</td><td>1</td><td><span class="ok">Feito</span>: auth + PostgreSQL</td></tr>
+  <tr><td>H3</td><td>Como jogador, quero entrar numa mesa de 2 a 6 jogadores e ver o jogo em tempo real.</td><td>Alta</td><td>2</td><td><span class="ok">Feito</span>: lobby + Socket.IO</td></tr>
+  <tr><td>H4</td><td>Como jogador, quero ver Cartas, Fichas e Mesa de forma clara e acessível.</td><td>Alta</td><td>2</td><td><span class="ok">Feito</span>: layout responsivo, papéis ARIA, menos movimento</td></tr>
+  <tr><td>H5</td><td>Como jogador, quero uma carteira de fichas virtuais com saldo confiável.</td><td>Alta</td><td>3</td><td><span class="pendente">Pendente</span>: hoje as fichas valem por sessão de mesa</td></tr>
+  <tr><td>H6</td><td>Como jogador, quero jogar contra bots identificados como bots.</td><td>Média</td><td>4 → 1</td><td><span class="parcial">Parcial</span>: bot por regras, com selo BOT; versão Monte Carlo pendente</td></tr>
+  <tr><td>H7</td><td>Como jogador, quero que me recomendem mesas do meu nível.</td><td>Média</td><td>5</td><td><span class="pendente">Pendente</span></td></tr>
+  <tr><td>H8</td><td>Como jogador, quero um coach que explique minhas jogadas.</td><td>Média</td><td>5 → 1</td><td><span class="ok">Feito</span>: Coach IA com 3 perfis, ao vivo</td></tr>
+  <tr><td>H9</td><td>Como jogador, quero um chat sem toxicidade.</td><td>Média</td><td>5</td><td><span class="pendente">Pendente</span></td></tr>
+  <tr><td>H10</td><td>Como jogador, quero rever o histórico das minhas mãos.</td><td>Baixa</td><td>6</td><td><span class="parcial">Parcial</span>: histórico da mão atual na tela</td></tr>
+  <tr><td>H11</td><td>Como administrador, quero detectar conluio e bots não declarados.</td><td>Baixa</td><td>6</td><td><span class="pendente">Pendente</span></td></tr>
+  <tr><td>H12</td><td>Como equipe, queremos ver todos os microsserviços em execução e a API documentada.</td><td>Média</td><td>6</td><td><span class="parcial">Parcial</span>: <code>/saude</code> em todos os serviços, contratos tipados e documentados neste relatório</td></tr>
+</table>
+
+<h2 style="break-before: page">5.2 Sprint Backlog por sprint</h2>
+<table class="compacta">
+  <thead><tr><th style="width:7%">Sprint</th><th>Tarefas</th><th style="width:30%">Critério de aceite</th></tr></thead>
+  <tr><td>1</td><td>Avaliador de mãos, baralho seguro, validador de ações, Game Engine, Gateway/Auth mínimo, CI. <b>Puxadas para frente:</b> lobby e mesa por WebSocket, cliente React, bot simples, agent-orchestrator com equity e Coach IA (Claude/Ollama/regras), auth com PostgreSQL, perfis do coach e escrita ao vivo.</td><td>Uma mão completa roda nos testes, incluindo side pots e empates. <span class="ok">Atingido</span>, e o jogo já é jogável no navegador.</td></tr>
+  <tr><td>2</td><td>Lobby e mesa via WebSocket, SDK do cliente, componentes de UI. <i>A maior parte foi antecipada na Sprint 1.</i> Resta extrair o SDK do cliente como componente.</td><td>Dois navegadores jogam a mesma mão em tempo real.</td></tr>
+  <tr><td>3</td><td>Wallet com ledger, eventos no barramento, contratos em <code>shared-types</code>.</td><td>Saldos fecham após cada mão, sem divergência.</td></tr>
+  <tr><td>4</td><td>Bot por Monte Carlo atrás do Agent Orchestrator (a calculadora de equity já existe).</td><td>Um bot joga uma mão inteira e aparece como bot.</td></tr>
+  <tr><td>5</td><td>Recommendation de mesas, agente narrador, Chat &amp; Moderação.</td><td>A mesa recomendada aparece no lobby com o motivo; o chat bloqueia mensagens fora da política.</td></tr>
+  <tr><td>6</td><td>Replay/Analytics, anti-fraude, testes de carga, painel de serviços, README, vídeo.</td><td>Todos os serviços sobem com <code>docker compose up</code> e passam nos testes de carga.</td></tr>
+</table>
+
+<h3>Sprint Backlog detalhado da Sprint 1 (realizado)</h3>
+<table class="compacta">
+  <thead><tr><th style="width:30%">Tarefa</th><th style="width:22%">Onde</th><th>Resultado</th></tr></thead>
+  <tr><td>Configurar monorepo, TS, lint, testes e CI</td><td>raiz, <code>.github/workflows</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Tipos compartilhados e notação de cartas</td><td><code>packages/shared-types</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Baralho seguro (Fisher-Yates + crypto)</td><td><code>packages/deck</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Avaliador de mãos e desempates</td><td><code>packages/hand-evaluator</code></td><td><span class="ok">Feito</span>, validado contra o pokersolver</td></tr>
+  <tr><td>Validador de ações No-Limit</td><td><code>packages/action-validator</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Motor da mão + side pots</td><td><code>services/game-engine/src/motor</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Mesa ao vivo, lobby, bots, servidor Socket.IO</td><td><code>services/game-engine/src</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Cliente web (acesso, menu, lobby, mesa)</td><td><code>apps/web</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Calculadora de equity Monte Carlo</td><td><code>packages/equity</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Agent Orchestrator + Coach IA (3 provedores)</td><td><code>services/agent-orchestrator</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Contas com PostgreSQL e sessão JWT</td><td><code>services/auth</code>, <code>packages/sessao</code></td><td><span class="ok">Feito</span></td></tr>
+  <tr><td>Perfis do coach e escrita ao vivo (streaming)</td><td>orchestrator, game-engine, web</td><td><span class="ok">Feito</span></td></tr>
+</table>
+</section>
+
+<!-- ============================ 6 ============================ -->
+<section class="capitulo">
+<h1>6. Arquitetura do sistema</h1>
+<h2>6.1 Arquitetura de microsserviços</h2>
+<p>O navegador fala com um único ponto de entrada, o <b>API Gateway</b> embutido no <code>game-engine</code>. As rotas de conta são repassadas ao <code>auth</code>, que é o único serviço com acesso ao PostgreSQL. As jogadas trafegam por WebSocket até o motor autoritativo. Para o Coach, o <code>game-engine</code> envia ao <code>agent-orchestrator</code> a <b>mesma visão filtrada</b> que o jogador recebe. O orquestrador escuta só em <code>127.0.0.1</code>, então não é acessível de fora. Os componentes de <code>packages/</code> são importados como bibliotecas, não chamados pela rede.</p>
+
+<figure>
+<svg viewBox="0 0 960 610" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f6b45"/></marker>
+  </defs>
+  <!-- navegador -->
+  <rect x="300" y="18" width="360" height="66" rx="8" fill="#fff" stroke="#1d2420" stroke-width="1.5"/>
+  <text x="480" y="44" text-anchor="middle" font-size="15" font-weight="700">Navegador do jogador</text>
+  <text x="480" y="66" text-anchor="middle" font-size="12" fill="#5b655f">apps/web · React 19 + Vite · Socket.IO client</text>
+  <!-- planejado -->
+  <rect x="712" y="14" width="232" height="118" rx="8" fill="#fafafa" stroke="#9aa39e" stroke-dasharray="6 4"/>
+  <text x="828" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="#5b655f">Planejado (Sprints 3–6)</text>
+  <text x="828" y="58" text-anchor="middle" font-size="11.5" fill="#5b655f">Wallet (ledger de fichas)</text>
+  <text x="828" y="76" text-anchor="middle" font-size="11.5" fill="#5b655f">Recommendation de mesas</text>
+  <text x="828" y="94" text-anchor="middle" font-size="11.5" fill="#5b655f">Chat · Replay · Anti-fraude</text>
+  <text x="828" y="112" text-anchor="middle" font-size="11.5" fill="#5b655f">Barramento de eventos</text>
+  <!-- seta navegador → engine -->
+  <line x1="480" y1="84" x2="480" y2="136" stroke="#1f6b45" stroke-width="2" marker-end="url(#seta)" marker-start="url(#seta)"/>
+  <text x="470" y="108" text-anchor="end" font-size="11.5" fill="#1f6b45">HTTP (/, /api/auth/*) + WebSocket (/socket.io)</text>
+  <!-- game-engine -->
+  <rect x="200" y="138" width="560" height="128" rx="10" fill="#e9f4ee" stroke="#1f6b45" stroke-width="2"/>
+  <text x="480" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="#1f6b45">game-engine · :3001 — API Gateway + servidor autoritativo</text>
+  <text x="222" y="188" font-size="12">• Gateway: /api/auth/* → auth · /socket.io · arquivos do cliente · /saude</text>
+  <text x="222" y="208" font-size="12">• Sessão: cookie JWT verificado no handshake do WebSocket (componente sessao)</text>
+  <text x="222" y="228" font-size="12">• Lobby (3 mesas) · MesaAoVivo (vez, timers, bots) · visão filtrada por jogador</text>
+  <text x="222" y="248" font-size="12">• Motor puro (estado, ação) → estado · side pots · showdown</text>
+  <!-- setas para auth e orch -->
+  <line x1="300" y1="266" x2="210" y2="330" stroke="#1f6b45" stroke-width="2" marker-end="url(#seta)"/>
+  <text x="120" y="300" font-size="11.5" fill="#1f6b45">proxy HTTP</text>
+  <line x1="660" y1="266" x2="740" y2="330" stroke="#1f6b45" stroke-width="2" marker-end="url(#seta)"/>
+  <text x="738" y="290" font-size="11.5" fill="#1f6b45">POST JSON / NDJSON</text>
+  <text x="738" y="306" font-size="11.5" fill="#1f6b45">(visão filtrada + perfil)</text>
+  <!-- auth -->
+  <rect x="40" y="332" width="330" height="86" rx="10" fill="#fff" stroke="#b3261e" stroke-width="2"/>
+  <text x="205" y="356" text-anchor="middle" font-size="14.5" font-weight="700" fill="#b3261e">auth · :3003</text>
+  <text x="205" y="378" text-anchor="middle" font-size="12">cadastro · login · logout · eu</text>
+  <text x="205" y="398" text-anchor="middle" font-size="12">scrypt · emite JWT (cookie httpOnly)</text>
+  <!-- orchestrator -->
+  <rect x="520" y="332" width="400" height="86" rx="10" fill="#fff" stroke="#3f5bd9" stroke-width="2"/>
+  <text x="720" y="356" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3f5bd9">agent-orchestrator · 127.0.0.1:3002</text>
+  <text x="720" y="378" text-anchor="middle" font-size="12">Coach IA: análise · recomendação · leitura</text>
+  <text x="720" y="398" text-anchor="middle" font-size="12">fila da IA · cache por decisão · fallback por regras</text>
+  <!-- setas para dados -->
+  <line x1="205" y1="418" x2="205" y2="466" stroke="#1f6b45" stroke-width="2" marker-end="url(#seta)"/>
+  <text x="215" y="446" font-size="11.5" fill="#1f6b45">SQL (pg)</text>
+  <line x1="640" y1="418" x2="615" y2="466" stroke="#1f6b45" stroke-width="2" marker-end="url(#seta)"/>
+  <line x1="800" y1="418" x2="825" y2="466" stroke="#1f6b45" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#seta)"/>
+  <text x="652" y="446" font-size="11.5" fill="#1f6b45">/api/chat (stream)</text>
+  <text x="832" y="446" font-size="11.5" fill="#1f6b45">opcional</text>
+  <!-- dados -->
+  <rect x="40" y="468" width="330" height="62" rx="8" fill="#f6f8f7" stroke="#5b655f"/>
+  <text x="205" y="493" text-anchor="middle" font-size="13.5" font-weight="700">PostgreSQL 17 (Docker) · :5433</text>
+  <text x="205" y="514" text-anchor="middle" font-size="12" fill="#5b655f">tabelas usuarios, migracoes</text>
+  <rect x="520" y="468" width="190" height="62" rx="8" fill="#f6f8f7" stroke="#5b655f"/>
+  <text x="615" y="493" text-anchor="middle" font-size="13.5" font-weight="700">Ollama · :11434</text>
+  <text x="615" y="514" text-anchor="middle" font-size="12" fill="#5b655f">qwen3:8b (local, grátis)</text>
+  <rect x="730" y="468" width="190" height="62" rx="8" fill="#f6f8f7" stroke="#9aa39e" stroke-dasharray="6 4"/>
+  <text x="825" y="493" text-anchor="middle" font-size="13.5" font-weight="700">API da Anthropic</text>
+  <text x="825" y="514" text-anchor="middle" font-size="12" fill="#5b655f">Claude (opcional)</text>
+  <!-- componentes -->
+  <rect x="40" y="548" width="880" height="52" rx="8" fill="#fff8e6" stroke="#d9a521"/>
+  <text x="480" y="570" text-anchor="middle" font-size="13" font-weight="700">Componentes de software (packages/, importados como bibliotecas)</text>
+  <text x="480" y="590" text-anchor="middle" font-size="12">shared-types · deck · hand-evaluator · action-validator · equity · sessao</text>
+</svg>
+<figcaption>Figura 1 — Arquitetura de microsserviços do Agentic Poker. Linhas contínuas: comunicação implementada; tracejado: opcional ou planejado.</figcaption>
+</figure>
+
+<h3>Fluxo de uma jogada com o Coach</h3>
+<ol>
+  <li>O cliente emite <code>coach:pedir</code> pelo WebSocket com o modo (<i>decisão</i> ou <i>leitura</i>) e o perfil.</li>
+  <li>O gateway identifica o jogador pelo cookie (nunca pelo que o cliente diz) e monta a visão filtrada dele.</li>
+  <li><code>POST /coach/analise</code>: os números (equity e pot odds) voltam em milissegundos e aparecem na hora (<code>coach:analise</code>).</li>
+  <li><code>POST /coach/recomendacao</code> com <code>accept: application/x-ndjson</code>: cada linha de progresso vira um evento <code>coach:escrevendo</code> e a última linha traz a recomendação validada (<code>coach:recomendacao</code>).</li>
+  <li>A jogada do jogador sai como <code>mesa:acao</code>. O motor a valida com o <code>action-validator</code>, aplica, e cada jogador recebe sua nova visão (<code>mesa:estado</code>).</li>
+</ol>
+
+<h3>Padrões de microsserviços aplicados</h3>
+<table>
+  <thead><tr><th style="width:28%">Padrão</th><th>Onde</th></tr></thead>
+  <tr><td>API Gateway</td><td><code>game-engine</code> é a porta única: roteia <code>/api/auth</code>, WebSocket e arquivos do cliente (seção 6.2).</td></tr>
+  <tr><td>Database per service</td><td>Só o <code>auth</code> acessa o PostgreSQL; o <code>game-engine</code> confia no token assinado.</td></tr>
+  <tr><td>Access token</td><td>JWT HS256 no cookie, verificado no gateway sem consultar o banco.</td></tr>
+  <tr><td>Circuit breaker / fallback</td><td>O orquestrador tem prazo por pedido; se falhar, responde pelo coach por regras.</td></tr>
+  <tr><td>Bulkhead (fila)</td><td><code>FilaDaIA</code> limita a concorrência no modelo local e recusa na hora quando a fila enche.</td></tr>
+  <tr><td>Health check</td><td><code>GET /saude</code> em todos os serviços (seção 6.5).</td></tr>
+  <tr><td>Log estruturado</td><td>Cada recomendação gera uma linha JSON com provedor, perfil, tempo, tokens e fila.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>6.2 API Gateway (código documentado)</h2>
+<p>O gateway fica no processo do <code>game-engine</code>. Ele resolve quatro coisas: (1) repassa <code>/api/auth/*</code> ao microsserviço <code>auth</code>; (2) responde <code>/saude</code>; (3) serve os arquivos do cliente compilado; (4) aceita o WebSocket <b>somente</b> com sessão válida. Em desenvolvimento, o papel de roteamento HTTP é feito pelo proxy do Vite, com as mesmas rotas.</p>
+
+<p class="arquivo">services/game-engine/src/servidor/main.ts — roteamento HTTP e autenticação do WebSocket</p>
+<pre>const servirEstaticos = criarServidorDeEstaticos(PASTA_WEB);
+const repassarAoAuth = criarProxyDoAuth(URL_DO_AUTH);
+const http = createServer((req, res) =&gt; {
+  if (req.url?.startsWith(&#x27;/api/auth/&#x27;)) return repassarAoAuth(req, res);
+  if (req.url === &#x27;/saude&#x27;) {
+    res.writeHead(200, { &#x27;content-type&#x27;: &#x27;application/json&#x27; });
+    res.end(JSON.stringify({ servico: &#x27;game-engine&#x27;, ok: true }));
+    return;
+  }
+  servirEstaticos(req, res).catch(() =&gt; res.writeHead(500).end());
+});
+
+const io = new Server&lt;EventosDoCliente, EventosDoServidor, Record&lt;string, never&gt;, DadosDoSocket&gt;(
+  http,
+);
+
+<span class="com">// Só entra quem tem sessão válida (cookie emitido pelo serviço auth no login).</span>
+io.use((conexao, seguir) =&gt; {
+  const identificacao = identificacaoDoCookie(conexao.handshake.headers.cookie, SEGREDO_DA_SESSAO);
+  if (!identificacao) return seguir(new Error(&#x27;nao-autenticado&#x27;));
+  conexao.data = { ...identificacao, mesaId: null };
+  seguir();
+});</pre>
+
+<p class="arquivo">services/game-engine/src/servidor/proxy-auth.ts — proxy reverso para o serviço auth</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Em produção (`pnpm start`) a interface é servida pelo game-engine, então ele repassa</span>
+<span class="com"> * /api/auth/* para o serviço auth. Em desenvolvimento quem faz isso é o Vite.</span>
+<span class="com"> */</span>
+import { request, type IncomingMessage, type ServerResponse } from &#x27;node:http&#x27;;
+
+export function criarProxyDoAuth(urlDoAuth: string) {
+  const destino = new URL(urlDoAuth);
+
+  return (req: IncomingMessage, res: ServerResponse): void =&gt; {
+    const pedido = request(
+      {
+        hostname: destino.hostname,
+        port: destino.port,
+        path: req.url,
+        method: req.method,
+        headers: {
+          ...req.headers,
+          host: destino.host,
+<span class="com">          // Substitui (não acrescenta): o cliente não consegue forjar o próprio IP.</span>
+          &#x27;x-forwarded-for&#x27;: req.socket.remoteAddress ?? &#x27;&#x27;,
+        },
+        timeout: 10_000,
+      },
+      (resposta) =&gt; {
+        res.writeHead(resposta.statusCode ?? 502, resposta.headers);
+        resposta.pipe(res);
+      },
+    );
+    pedido.on(&#x27;timeout&#x27;, () =&gt; pedido.destroy(new Error(&#x27;timeout&#x27;)));
+    pedido.on(&#x27;error&#x27;, () =&gt; {
+      if (res.headersSent) return void res.end();
+      res.writeHead(502, { &#x27;content-type&#x27;: &#x27;application/json; charset=utf-8&#x27; });
+      res.end(JSON.stringify({ ok: false, motivo: &#x27;Serviço de contas fora do ar.&#x27; }));
+    });
+    req.pipe(pedido);
+  };
+}</pre>
+
+<p class="arquivo">apps/web/vite.config.ts — as mesmas rotas em desenvolvimento</p>
+<pre>  server: {
+    port: 5173,
+<span class="com">    // Em desenvolvimento, o Vite repassa o WebSocket ao servidor do jogo e /api/auth ao auth.</span>
+    proxy: {
+      &#x27;/api/auth&#x27;: {
+        target: `http://127.0.0.1:${process.env.AUTH_PORT ?? 3003}`,
+        xfwd: true,
+      },
+      &#x27;/socket.io&#x27;: {
+        target: `http://localhost:${process.env.GAME_ENGINE_PORT ?? 3001}`,
+        ws: true,
+      },
+    },
+  },
+});</pre>
+
+<h3>Contrato do gateway</h3>
+<table>
+  <thead><tr><th style="width:30%">Rota / evento</th><th style="width:16%">Destino</th><th>Descrição</th></tr></thead>
+  <tr><td><code>POST /api/auth/cadastro</code></td><td>auth</td><td><code>{ email, apelido, senha }</code> → cria a conta e emite o cookie de sessão.</td></tr>
+  <tr><td><code>POST /api/auth/login</code></td><td>auth</td><td><code>{ email, senha }</code> → emite o cookie.</td></tr>
+  <tr><td><code>POST /api/auth/logout</code></td><td>auth</td><td>Apaga o cookie.</td></tr>
+  <tr><td><code>GET /api/auth/eu</code></td><td>auth</td><td>Usuário logado (sem o hash da senha).</td></tr>
+  <tr><td><code>GET /saude</code></td><td>game-engine</td><td><code>{ servico, ok }</code></td></tr>
+  <tr><td><code>/socket.io</code></td><td>game-engine</td><td>WebSocket do jogo; recusa com <code>nao-autenticado</code> sem cookie válido.</td></tr>
+  <tr><td><code>GET /*</code></td><td>game-engine</td><td>Arquivos estáticos do cliente (<code>apps/web/dist</code>).</td></tr>
+</table>
+</section>
+
+<section>
+<h2>6.3 Especificação de cada microsserviço e componente</h2>
+
+<h3>6.3.1 Microsserviço game-engine</h3>
+<p><b>Responsabilidade:</b> único dono do estado das mesas e das mãos. <b>Interface:</b> WebSocket com eventos tipados em <code>shared-types</code>. <b>Dados:</b> em memória, já que o estado de uma mão dura segundos; o ledger persistente está planejado no serviço Wallet. <b>Componentes usados:</b> deck, hand-evaluator, action-validator, sessao, shared-types.</p>
+<p class="arquivo">packages/shared-types/src/protocolo.ts — contrato WebSocket (AsyncAPI simplificado, em tipos)</p>
+<pre>export interface EventosDoServidor {
+  &#x27;lobby:mesas&#x27;: (mesas: ResumoDaMesa[]) =&gt; void;
+  &#x27;mesa:estado&#x27;: (visao: VisaoDaMesa | null) =&gt; void;
+<span class="com">  /** Números do coach: chegam rápido, sem IA. */</span>
+  &#x27;coach:analise&#x27;: (analise: AnaliseDoCoach) =&gt; void;
+<span class="com">  /** Recomendação do agente: chega depois (a IA leva alguns segundos). */</span>
+  &#x27;coach:recomendacao&#x27;: (recomendacao: RecomendacaoDoCoach) =&gt; void;
+<span class="com">  /** Comentário da IA sobre a mão atual, a cada nova etapa. */</span>
+  &#x27;coach:leitura&#x27;: (leitura: LeituraDoCoach) =&gt; void;
+<span class="com">  /** A IA escrevendo ao vivo: passos do agente e texto parcial, antes da resposta final. */</span>
+  &#x27;coach:escrevendo&#x27;: (escrita: EscritaDoCoach) =&gt; void;
+}
+
+export interface EventosDoCliente {
+  &#x27;mesa:entrar&#x27;: (dados: { mesaId: string }, responder: (r: Resposta) =&gt; void) =&gt; void;
+  &#x27;mesa:sair&#x27;: (responder: (r: Resposta) =&gt; void) =&gt; void;
+  &#x27;mesa:adicionar-bot&#x27;: (responder: (r: Resposta) =&gt; void) =&gt; void;
+  &#x27;mesa:acao&#x27;: (acao: Acao, responder: (r: Resposta) =&gt; void) =&gt; void;
+<span class="com">  /** Pede ao Coach IA uma análise da situação atual do jogador, no modo e perfil dados. */</span>
+  &#x27;coach:pedir&#x27;: (pedido: PedidoAoCoach, responder: (r: Resposta) =&gt; void) =&gt; void;
+}</pre>
+<p class="arquivo">services/game-engine/src/motor/mao.ts — motor puro: valida e aplica uma ação</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Máquina de estados de uma mão de Texas Hold&#x27;em No-Limit.</span>
+<span class="com"> *</span>
+<span class="com"> * Funções puras: recebem um estado e devolvem um estado novo, sem alterar o anterior,</span>
+<span class="com"> * sem rede, sem relógio. Toda regra do jogo mora aqui; quem chama (a mesa ao vivo,</span>
+<span class="com"> * os testes, um bot de playtest) só escolhe as ações.</span>
+<span class="com"> *</span>
+<span class="com"> *   iniciarMao → blinds, 2 cartas para cada um, primeira vez de agir</span>
+<span class="com"> *   aplicarAcao → valida, aplica, passa a vez, abre flop/turn/river, faz o showdown</span>
+<span class="com"> */</span></pre>
+<pre>export function aplicarAcao(estado: EstadoDaMao, jogadorId: string, acao: Acao): ResultadoDaJogada {
+  if (estado.fase === &#x27;encerrada&#x27; || estado.vez === null) {
+    return { ok: false, motivo: &#x27;A mão já terminou.&#x27; };
+  }
+  const vez = estado.vez;
+  if ((estado.jogadores[vez] as JogadorNaMao).id !== jogadorId) {
+    return { ok: false, motivo: &#x27;Não é a sua vez.&#x27; };
+  }
+
+  const validacao = validarAcao(situacaoDeAposta(estado, vez), acao);
+  if (!validacao.valida) return { ok: false, motivo: validacao.motivo };
+  const efeito = validacao.efeito;
+
+  const e = copiar(estado);
+  const j = e.jogadores[vez] as JogadorMutavel;
+  j.stack -= efeito.fichasColocadas;
+  j.apostaNaRodada = efeito.apostaTotal;
+  j.totalApostado += efeito.fichasColocadas;
+  j.jaAgiu = true;
+  j.apostaQuandoAgiu = efeito.novaMaiorAposta;
+  if (efeito.tipo === &#x27;desistir&#x27;) j.situacao = &#x27;desistiu&#x27;;
+  else if (efeito.allIn) j.situacao = &#x27;all-in&#x27;;
+
+<span class="com">  // Aumento completo: todo mundo que ainda tem fichas volta a precisar agir.</span>
+  if (efeito.reabreAcao) {
+    for (const outro of e.jogadores)
+      if (outro !== j &amp;&amp; outro.situacao === &#x27;ativo&#x27;) outro.jaAgiu = false;
+  }
+  e.maiorAposta = efeito.novaMaiorAposta;
+  e.aumentoMinimo = efeito.novoAumentoMinimo;
+<span class="com">  …</span></pre>
+<p class="arquivo">services/game-engine/src/motor/potes.ts — divisão em pote principal e side pots</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Divide as fichas apostadas em pote principal e side pots.</span>
+<span class="com"> *</span>
+<span class="com"> * Quando alguém vai all-in com menos fichas que os outros, só pode ganhar de cada</span>
+<span class="com"> * adversário o mesmo tanto que apostou. Para isso, os potes são cortados nos níveis de</span>
+<span class="com"> * aposta de quem continua na mão:</span>
+<span class="com"> *</span>
+<span class="com"> *   A all-in com 100, B all-in com 300, C apostou 300:</span>
+<span class="com"> *   - pote principal: 100 de cada = 300, disputado por A, B e C;</span>
+<span class="com"> *   - side pot: mais 200 de B e C = 400, disputado só por B e C.</span>
+<span class="com"> *</span>
+<span class="com"> * Fichas de quem desistiu entram nos potes, mas essa pessoa não é elegível.</span>
+<span class="com"> * Um pote com um elegível só é o excedente de uma aposta que ninguém pagou: volta para ele.</span>
+<span class="com"> */</span>
+export function calcularPotes(jogadores: readonly JogadorNaMao[]): Pote[] {
+  const naMao = jogadores.filter((j) =&gt; j.situacao !== &#x27;desistiu&#x27;);
+  const niveis = [...new Set(naMao.map((j) =&gt; j.totalApostado))]
+    .filter((n) =&gt; n &gt; 0)
+    .sort((a, b) =&gt; a - b);
+
+  const potes: { valor: Fichas; elegiveis: string[] }[] = [];
+  let anterior = 0;
+  for (const nivel of niveis) {
+    const valor = jogadores.reduce(
+      (soma, j) =&gt; soma + Math.min(j.totalApostado, nivel) - Math.min(j.totalApostado, anterior),
+      0,
+    );
+    const elegiveis = naMao.filter((j) =&gt; j.totalApostado &gt;= nivel).map((j) =&gt; j.id);
+    if (valor &gt; 0) potes.push({ valor, elegiveis });
+    anterior = nivel;
+  }
+<span class="com">  …</span></pre>
+<p class="arquivo">services/game-engine/src/mesa/visao.ts — o que UM jogador pode ver (segurança do servidor autoritativo)</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Monta o que UM jogador pode ver da mesa. É aqui que o servidor autoritativo protege a</span>
+<span class="com"> * informação secreta: cartas dos adversários só aparecem quando reveladas no showdown, e</span>
+<span class="com"> * o baralho nunca sai do servidor.</span>
+<span class="com"> */</span></pre>
+<pre>export function montarVisao(m: InstantaneoDaMesa, quemVe: string | null): VisaoDaMesa {
+  const { mao } = m;
+  const emAndamento = mao !== null &amp;&amp; mao.fase !== &#x27;encerrada&#x27;;
+  const reveladas = mao?.resultado?.maosReveladas ?? {};
+
+  const jogadores: JogadorVisivel[] = m.assentos.flatMap((a, assento) =&gt; {
+    if (!a) return [];
+    const naMao = mao?.jogadores.find((j) =&gt; j.id === a.id);
+    const podeVerCartas = naMao !== undefined &amp;&amp; (a.id === quemVe || a.id in reveladas);
+    return [
+      {
+        id: a.id,
+        nome: a.nome,
+        assento,
+        stack: naMao ? naMao.stack : a.stack,
+        apostaNaRodada: naMao &amp;&amp; emAndamento ? naMao.apostaNaRodada : 0,
+        situacao: naMao ? naMao.situacao : &#x27;aguardando&#x27;,
+        ehBot: a.ehBot,
+        conectado: a.conectado,
+        cartas: podeVerCartas ? naMao.cartas : null,
+        quantidadeDeCartas: naMao &amp;&amp; naMao.situacao !== &#x27;desistiu&#x27; ? naMao.cartas.length : 0,
+        ehBotao: assento === m.assentoDoBotao,
+      },
+    ];
+  });
+<span class="com">  …</span></pre>
+<p class="arquivo">services/game-engine/src/servidor/coach.ts — ponte com o agent-orchestrator (leitura do NDJSON)</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Ponte entre o servidor do jogo e o microsserviço Agent Orchestrator.</span>
+<span class="com"> *</span>
+<span class="com"> * O jogo envia ao orquestrador a MESMA visão filtrada que o jogador recebe na tela.</span>
+<span class="com"> * Assim, por construção, o coach não tem acesso a cartas ocultas nem ao baralho.</span>
+<span class="com"> */</span></pre>
+<pre><span class="com">/**</span>
+<span class="com"> * Pede ao orquestrador. Com `aoEscrever`, pede a resposta AO VIVO (NDJSON): cada linha de</span>
+<span class="com"> * progresso (passos do agente, texto parcial) vai para `aoEscrever`, e a última traz a</span>
+<span class="com"> * resposta final.</span>
+<span class="com"> */</span>
+async function pedir&lt;T&gt;(
+  rota: string,
+  visao: VisaoDaMesa,
+  perfil: PerfilDoCoach,
+  prazoMs: number,
+  aoEscrever?: (escrita: EscritaDoCoach) =&gt; void,
+): Promise&lt;Resultado&lt;T&gt;&gt; {
+  try {
+    const resposta = await fetch(`${URL_DO_ORQUESTRADOR}${rota}`, {
+      method: &#x27;POST&#x27;,
+      headers: {
+        &#x27;content-type&#x27;: &#x27;application/json&#x27;,
+        ...(aoEscrever &amp;&amp; { accept: &#x27;application/x-ndjson&#x27; }),
+      },
+      body: JSON.stringify({ visao, perfil }),
+      signal: AbortSignal.timeout(prazoMs),
+    });
+    const aoVivo = (resposta.headers.get(&#x27;content-type&#x27;) ?? &#x27;&#x27;).includes(&#x27;ndjson&#x27;);
+    if (!resposta.ok || !aoVivo || !resposta.body) {
+      const corpo = (await resposta.json()) as T &amp; { motivo?: string };
+      return resposta.ok
+        ? { ok: true, dados: corpo }
+        : { ok: false, motivo: corpo.motivo ?? &#x27;Coach indisponível.&#x27; };
+    }
+    return await lerRespostaAoVivo&lt;T&gt;(resposta.body, aoEscrever);
+  } catch {
+    return { ok: false, motivo: INDISPONIVEL };
+  }
+}
+
+<span class="com">/** Lê a resposta em linhas: repassa cada `escrita` e devolve o `final`. */</span>
+export async function lerRespostaAoVivo&lt;T&gt;(
+  corpo: ReadableStream&lt;Uint8Array&gt;,
+  aoEscrever?: (escrita: EscritaDoCoach) =&gt; void,
+): Promise&lt;Resultado&lt;T&gt;&gt; {
+  for await (const linha of lerLinhas(corpo)) {
+    const mensagem = JSON.parse(linha) as
+      { tipo: &#x27;escrita&#x27;; escrita: EscritaDoCoach } | { tipo: &#x27;final&#x27;; dados: T };
+    if (mensagem.tipo === &#x27;escrita&#x27;) aoEscrever?.(mensagem.escrita);
+    else if (mensagem.tipo === &#x27;final&#x27;) return { ok: true, dados: mensagem.dados };
+  }
+  return { ok: false, motivo: INDISPONIVEL };
+}</pre>
+
+<h3>6.3.2 Microsserviço auth</h3>
+<p><b>Responsabilidade:</b> contas e sessão. <b>Interface:</b> HTTP/JSON (tabela da seção 6.2). <b>Banco:</b> PostgreSQL 17, com migrações versionadas que rodam ao subir o serviço. <b>Segurança:</b> scrypt com sal por senha, mesmo tempo de resposta com ou sem conta (evita descobrir e-mails pelo tempo), limite de 20 tentativas a cada 10 minutos por IP, cookie httpOnly, SameSite=Lax e exigência de JSON nos POST (proteção contra CSRF).</p>
+<p class="arquivo">services/auth/src/app.ts — rotas</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Regras das rotas de autenticação, sem depender de node:http (o servidor.ts faz a ponte).</span>
+<span class="com"> *</span>
+<span class="com"> *   POST /api/auth/cadastro  { email, apelido, senha }  → cria a conta e já entra</span>
+<span class="com"> *   POST /api/auth/login     { email, senha }           → entra</span>
+<span class="com"> *   POST /api/auth/logout                               → sai (apaga o cookie)</span>
+<span class="com"> *   GET  /api/auth/eu                                   → quem está logado</span>
+<span class="com"> *</span>
+<span class="com"> * A sessão vai num cookie httpOnly (o JavaScript da página não consegue lê-lo) e</span>
+<span class="com"> * SameSite=Lax; os POST também exigem JSON, o que um formulário de outro site não envia.</span>
+<span class="com"> */</span></pre>
+<pre>  return async function tratar(pedido: Pedido): Promise&lt;Resultado&gt; {
+    const rota = `${pedido.metodo} ${pedido.caminho}`;
+    if (rota === &#x27;GET /saude&#x27;) return { status: 200, corpo: { ok: true } };
+    if (rota === &#x27;GET /api/auth/eu&#x27;) return quemSouEu(pedido);
+
+    const ehPost = [&#x27;/api/auth/cadastro&#x27;, &#x27;/api/auth/login&#x27;, &#x27;/api/auth/logout&#x27;].includes(
+      pedido.caminho,
+    );
+    if (!ehPost) return recusa(404, &#x27;Rota não encontrada.&#x27;);
+    if (pedido.metodo !== &#x27;POST&#x27;) return recusa(405, &#x27;Método não permitido.&#x27;);
+    if (!pedido.tipoDoConteudo?.toLowerCase().startsWith(&#x27;application/json&#x27;)) {
+      return recusa(415, &#x27;Envie o corpo em JSON.&#x27;);
+    }
+    if (pedido.corpo === ERRO_DE_JSON) return recusa(400, &#x27;JSON inválido.&#x27;);
+
+    switch (pedido.caminho) {
+      case &#x27;/api/auth/cadastro&#x27;:
+        return cadastrar(pedido);
+      case &#x27;/api/auth/login&#x27;:
+        return entrar(pedido);
+      default:
+        return { status: 200, corpo: { ok: true }, cookie: cookie(&#x27;&#x27;, 0) };
+    }
+  };
+}</pre>
+<p class="arquivo">services/auth/src/postgres.ts — esquema do banco (migração 1)</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Contas no Postgres. As migrações rodam ao subir o serviço, em ordem, e cada uma só</span>
+<span class="com"> * uma vez (a tabela `migracoes` guarda quais já rodaram).</span>
+<span class="com"> */</span>
+import pg from &#x27;pg&#x27;;
+import { JaCadastrado, type NovoUsuario, type Usuarios, type UsuarioGuardado } from &#x27;./usuarios.js&#x27;;
+
+const MIGRACOES: readonly string[] = [
+  `CREATE TABLE usuarios (
+     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+     email        text NOT NULL,
+     apelido      text NOT NULL,
+     hash_senha   text NOT NULL,
+     criado_em    timestamptz NOT NULL DEFAULT now()
+   );
+   CREATE UNIQUE INDEX usuarios_email_unico ON usuarios (lower(email));
+   CREATE UNIQUE INDEX usuarios_apelido_unico ON usuarios (lower(apelido));`,
+];</pre>
+<p class="arquivo">services/auth/src/senha.ts — hash de senhas</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Hash de senhas com scrypt (node:crypto), com sal aleatório por senha.</span>
+<span class="com"> * Formato guardado no banco: scrypt$&lt;logN&gt;$&lt;r&gt;$&lt;p&gt;$&lt;sal base64&gt;$&lt;hash base64&gt;</span>
+<span class="com"> * Os parâmetros ficam junto do hash para poderem subir no futuro sem invalidar contas antigas.</span>
+<span class="com"> */</span></pre>
+<pre>export async function gerarHash(senha: string): Promise&lt;string&gt; {
+  const sal = randomBytes(16);
+  const hash = await derivar(senha, sal, opcoesPara(LOG_N, R, P));
+  return [&#x27;scrypt&#x27;, LOG_N, R, P, sal.toString(&#x27;base64&#x27;), hash.toString(&#x27;base64&#x27;)].join(&#x27;$&#x27;);
+}
+
+export async function conferirSenha(senha: string, guardado: string): Promise&lt;boolean&gt; {
+  const [algoritmo, logN, r, p, sal, hash] = guardado.split(&#x27;$&#x27;);
+  if (algoritmo !== &#x27;scrypt&#x27; || !sal || !hash) return false;
+  const esperado = Buffer.from(hash, &#x27;base64&#x27;);
+  const obtido = await derivar(
+    senha,
+    Buffer.from(sal, &#x27;base64&#x27;),
+    opcoesPara(Number(logN), Number(r), Number(p)),
+  );
+  return obtido.length === esperado.length &amp;&amp; timingSafeEqual(obtido, esperado);
+}</pre>
+
+<h3>6.3.3 Microsserviço agent-orchestrator</h3>
+<p><b>Responsabilidade:</b> hospedar os agentes de IA do Coach. <b>Interface:</b> HTTP/JSON e NDJSON, só em <code>127.0.0.1</code>. <b>Dados:</b> nenhum banco; caches de 60 s por decisão e logs JSON. <b>Componentes usados:</b> equity, hand-evaluator, shared-types. O sistema de recomendação em si está detalhado na seção 6.4.</p>
+<p class="arquivo">services/agent-orchestrator/src/servidor.ts — contrato e roteamento</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Agent Orchestrator: microsserviço interno que hospeda os agentes de IA.</span>
+<span class="com"> * Só o game-engine fala com ele (escuta em 127.0.0.1), mandando a visão já filtrada</span>
+<span class="com"> * do jogador: o orquestrador nunca recebe cartas ocultas.</span>
+<span class="com"> *</span>
+<span class="com"> * Corpo de todas as rotas POST: { visao, perfil } (perfil: agressivo, equilibrado, seguro).</span>
+<span class="com"> *</span>
+<span class="com"> *   POST /coach/analise       → números imediatos (equity, pot odds, possibilidades)</span>
+<span class="com"> *   POST /coach/recomendacao  → na vez do jogador: recomendação do agente, ou por regras</span>
+<span class="com"> *   POST /coach/leitura       → a qualquer momento da mão: comentário curto da IA</span>
+<span class="com"> *                               (baixa prioridade: só usa a IA se ela estiver livre)</span>
+<span class="com"> *   GET  /saude</span>
+<span class="com"> *</span>
+<span class="com"> * Recomendação e leitura também podem vir AO VIVO: com o cabeçalho</span>
+<span class="com"> * `accept: application/x-ndjson`, a resposta chega em linhas, com os passos do agente e o</span>
+<span class="com"> * texto enquanto a IA escreve, e a resposta final na última linha.</span>
+<span class="com"> */</span></pre>
+<pre>async function tratar(req: IncomingMessage, res: ServerResponse): Promise&lt;void&gt; {
+  if (req.method === &#x27;GET&#x27; &amp;&amp; req.url === &#x27;/saude&#x27;) {
+    return responder(res, 200, {
+      servico: &#x27;agent-orchestrator&#x27;,
+      ok: true,
+      provedor: provedor.nome,
+      modelo: provedor.modelo,
+      fila: {
+        emAndamento: fila.emAndamento,
+        esperando: fila.naFila,
+        limite: provedor.concorrencia,
+      },
+      ...(await provedor.verificar()),
+    });
+  }
+  const rotas = [&#x27;/coach/analise&#x27;, &#x27;/coach/recomendacao&#x27;, &#x27;/coach/leitura&#x27;];
+  if (req.method !== &#x27;POST&#x27; || !rotas.includes(req.url ?? &#x27;&#x27;)) {
+    return responder(res, 404, { motivo: &#x27;Rota não encontrada.&#x27; });
+  }
+
+  const corpo = (await lerJson(req)) as { visao?: VisaoDaMesa; perfil?: unknown } | null;
+  const visao = corpo?.visao;
+  if (!visao || !Array.isArray(visao.jogadores) || !Array.isArray(visao.eventos)) {
+    return responder(res, 400, { motivo: &#x27;Corpo deve ter { visao }.&#x27; });
+  }
+  const perfil = ehPerfilDoCoach(corpo?.perfil) ? corpo.perfil : PERFIL_RECOMENDADO;
+<span class="com">  // Só a recomendação de jogada exige a vez do jogador; números e leitura valem a mão toda.</span>
+  const montado = montarContexto(visao, { exigirVez: req.url === &#x27;/coach/recomendacao&#x27; });
+  if (!montado.ok) return responder(res, 422, { motivo: montado.motivo });
+  const { contexto } = montado;
+
+  limparVencidos(Date.now());
+  const chave = chaveDaDecisao(visao, contexto, perfil);
+  const analise = analiseDaDecisao(chave, contexto, perfil);
+  switch (req.url) {
+    case &#x27;/coach/analise&#x27;:
+      return responder(res, 200, analise);
+    case &#x27;/coach/leitura&#x27;: {
+      const chaveDaLeitura = chaveDaEtapa(visao, contexto, perfil);
+      const leitura = leituraDaEtapa(chaveDaLeitura, contexto, analise);
+      if (querAoVivo(req)) return responderAoVivo(req, res, chaveDaLeitura, leitura);
+      return responder(res, 200, await leitura);
+    }
+    default: {
+      const decisao = decisaoDoJogador(visao, contexto);
+      const recomendacao = recomendacaoDaDecisao(chave, decisao, contexto, analise);
+      if (querAoVivo(req)) return responderAoVivo(req, res, chave, recomendacao);
+      return responder(res, 200, await recomendacao);
+    }
+  }
+}</pre>
+<p class="arquivo">services/agent-orchestrator/src/fila.ts — fila da IA (bulkhead)</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Fila de pedidos à IA. Um modelo local atende poucos pedidos ao mesmo tempo, e qualquer</span>
+<span class="com"> * jogador pode pedir uma análise: sem fila, vários pedidos juntos deixariam todos lentos.</span>
+<span class="com"> *</span>
+<span class="com"> * - `limite` pedidos rodam de cada vez; os demais esperam na ordem de chegada.</span>
+<span class="com"> * - Se a espera já tem `maxEsperando` pedidos, o novo é recusado na hora (o jogador recebe</span>
+<span class="com"> *   o coach por regras em vez de ficar esperando).</span>
+<span class="com"> * - O prazo do pedido (AbortSignal) conta desde a chegada, incluindo o tempo na fila.</span>
+<span class="com"> */</span></pre>
+
+<h3>6.3.4 Cliente web</h3>
+<p><b>Responsabilidade:</b> interface do jogador. <b>Tecnologia:</b> React 19, Vite e Socket.IO client. Reaproveita os tipos de <code>shared-types</code>, de modo que o cliente e o servidor falam o mesmo contrato. Componentes de tela: <code>Acesso</code>, <code>MenuInicial</code>, <code>Lobby</code>, <code>Mesa</code>, <code>BarraDeAcoes</code>, <code>CartaVisual</code>, <code>Fichas</code> e <code>CoachIA</code>. Quando a resposta chega inteira, sem streaming, o painel do Coach a revela com efeito de digitação e respeita a preferência de “menos movimento” do sistema:</p>
+<p class="arquivo">apps/web/src/componentes/CoachIA.tsx</p>
+<pre>function useDigitacao(textos: readonly string[], ativo: boolean, porSegundo = 90) {
+  const total = textos.reduce((soma, t) =&gt; soma + t.length, 0);
+  const [revelados, setRevelados] = useState(ativo ? 0 : total);
+  const assinatura = textos.join(&#x27;\u0000&#x27;);
+
+  useEffect(() =&gt; {
+    if (!ativo || prefereMenosMovimento()) {
+      setRevelados(total);
+      return;
+    }
+    setRevelados(0);
+    const inicio = performance.now();
+    const id = setInterval(() =&gt; {
+      const agora = Math.min(total, Math.floor(((performance.now() - inicio) / 1000) * porSegundo));
+      setRevelados(agora);
+      if (agora &gt;= total) clearInterval(id);
+    }, 30);
+    return () =&gt; clearInterval(id);
+<span class="com">    // A assinatura representa os textos; reiniciar só quando eles mudam.</span>
+  }, [assinatura, ativo, total, porSegundo]);
+<span class="com">  …</span></pre>
+
+<h3>6.3.5 Componentes de software</h3>
+<p class="arquivo">packages/deck/src/embaralhar.ts</p>
+<pre>import { randomInt } from &#x27;node:crypto&#x27;;
+
+<span class="com">/**</span>
+<span class="com"> * Sorteia um inteiro em [0, limite). Recebe a fonte de aleatoriedade como parâmetro</span>
+<span class="com"> * para que os testes possam usar uma sequência previsível. Em produção, use sempre</span>
+<span class="com"> * `sortearSeguro`.</span>
+<span class="com"> */</span>
+export type Sorteador = (limite: number) =&gt; number;
+
+<span class="com">/**</span>
+<span class="com"> * Sorteio com RNG criptográfico (`crypto.randomInt`), sem viés: cada valor em</span>
+<span class="com"> * [0, limite) tem exatamente a mesma chance. `Math.random` não serve aqui, porque</span>
+<span class="com"> * não é criptográfico e o estado interno dele pode ser previsto.</span>
+<span class="com"> */</span>
+export const sortearSeguro: Sorteador = (limite) =&gt; randomInt(limite);
+
+<span class="com">/**</span>
+<span class="com"> * Embaralhamento de Fisher-Yates: cada uma das n! ordens possíveis tem a mesma chance,</span>
+<span class="com"> * desde que o sorteador seja uniforme.</span>
+<span class="com"> *</span>
+<span class="com"> * Percorre a lista de trás para frente e troca cada posição `i` com uma posição</span>
+<span class="com"> * sorteada entre 0 e `i` (inclusive). O erro clássico é sortear entre 0 e n-1 em</span>
+<span class="com"> * todas as posições, o que gera ordens com chances diferentes.</span>
+<span class="com"> *</span>
+<span class="com"> * Não altera a lista recebida: devolve uma cópia embaralhada.</span>
+<span class="com"> */</span>
+export function embaralhar&lt;T&gt;(itens: readonly T[], sortear: Sorteador = sortearSeguro): T[] {
+  const resultado = [...itens];
+
+  for (let i = resultado.length - 1; i &gt; 0; i--) {
+    const j = sortear(i + 1);
+    if (!Number.isInteger(j) || j &lt; 0 || j &gt; i) {
+      throw new Error(`Sorteador devolveu ${j}, fora do intervalo esperado [0, ${i}].`);
+    }
+    [resultado[i], resultado[j]] = [resultado[j] as T, resultado[i] as T];
+  }
+
+  return resultado;
+}</pre>
+<p class="arquivo">packages/hand-evaluator/src/avaliador.ts — interface pública</p>
+<pre>export interface AvaliacaoDeMao {
+  readonly categoria: CategoriaDeMao;
+<span class="com">  /**</span>
+<span class="com">   * Valores que desempatam duas mãos da mesma categoria, do mais importante para o</span>
+<span class="com">   * menos. Exemplo: dois pares de Reis e 7 com kicker Ás = [13, 7, 14].</span>
+<span class="com">   * Numa sequência, só a carta mais alta importa; na sequência A-2-3-4-5 ela é o 5.</span>
+<span class="com">   */</span>
+  readonly desempate: readonly Valor[];
+<span class="com">  /** As 5 cartas que formam a mão, na ordem de importância para o desempate. */</span>
+  readonly cartas: readonly Carta[];
+<span class="com">  /**</span>
+<span class="com">   * Número que resume a mão: quanto maior, mais forte. Duas mãos empatam se, e só se,</span>
+<span class="com">   * têm a mesma força. Permite comparar e ordenar mãos com uma subtração.</span>
+<span class="com">   */</span>
+  readonly forca: number;
+}
+
+<span class="com">/**</span>
+<span class="com"> * Avalia a melhor mão de 5 cartas que dá para formar com 5, 6 ou 7 cartas</span>
+<span class="com"> * (no Hold&#x27;em: as 2 cartas do jogador mais as cartas comunitárias da mesa).</span>
+<span class="com"> */</span>
+export function avaliarMao(entrada: readonly Carta[]): AvaliacaoDeMao {
+  validarEntrada(entrada);
+<span class="com">  …</span></pre>
+<p class="arquivo">packages/action-validator/src/validador.ts</p>
+<pre><span class="com">/** O que a ação muda na mesa. O Game Engine aplica isso ao estado da mão. */</span>
+export interface EfeitoDaAcao {
+<span class="com">  /** Tipo final da ação. Um all-in vira `pagar`, `apostar` ou `aumentar`, com `allIn = true`. */</span>
+  readonly tipo: &#x27;desistir&#x27; | &#x27;passar&#x27; | &#x27;pagar&#x27; | &#x27;apostar&#x27; | &#x27;aumentar&#x27;;
+<span class="com">  /** Fichas que saem do stack do jogador e vão para a mesa. */</span>
+  readonly fichasColocadas: Fichas;
+<span class="com">  /** Total apostado pelo jogador nesta rodada depois da ação. */</span>
+  readonly apostaTotal: Fichas;
+<span class="com">  /** Verdadeiro se o jogador ficou sem fichas. */</span>
+  readonly allIn: boolean;
+  readonly novaMaiorAposta: Fichas;
+  readonly novoAumentoMinimo: Fichas;
+<span class="com">  /**</span>
+<span class="com">   * Verdadeiro se foi uma aposta ou aumento completo: todos os outros jogadores voltam a</span>
+<span class="com">   * poder aumentar. Um all-in menor que um aumento completo sobe a aposta, mas não reabre.</span>
+<span class="com">   */</span>
+  readonly reabreAcao: boolean;
+}
+
+export type ResultadoDaValidacao =
+  | { readonly valida: true; readonly efeito: EfeitoDaAcao }
+  | { readonly valida: false; readonly motivo: string };
+
+<span class="com">/** Confere se a ação é permitida na situação e, se for, calcula o efeito dela. */</span>
+export function validarAcao(s: SituacaoDeAposta, acao: Acao): ResultadoDaValidacao {
+  const permitidas = acoesPermitidas(s);
+<span class="com">  …</span></pre>
+<p class="arquivo">packages/equity/src/equity.ts — simulação Monte Carlo</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Calculadora de equity por simulação Monte Carlo.</span>
+<span class="com"> *</span>
+<span class="com"> * Equity é a fatia do pote que uma mão &quot;vale&quot; em média: a chance de ganhar mais a parte</span>
+<span class="com"> * dos empates. Como não sabemos as cartas dos adversários (e não devemos saber), a</span>
+<span class="com"> * simulação sorteia milhares de cenários possíveis com as cartas que restam e conta</span>
+<span class="com"> * quantas vezes a mão do jogador ganha.</span>
+<span class="com"> *</span>
+<span class="com"> * Só usa o que o jogador vê: as próprias cartas e as da mesa.</span>
+<span class="com"> */</span></pre>
+<pre>export function calcularEquity(p: ParametrosDeEquity): ResultadoDeEquity {
+  const simulacoes = p.simulacoes ?? 10_000;
+  const aleatorio = p.aleatorio ?? Math.random;
+  validar(p, simulacoes);
+
+  const conhecidas = new Set([...p.minhasCartas, ...p.cartasNaMesa].map(formatarCarta));
+  const restantes = BARALHO.filter((c) =&gt; !conhecidas.has(formatarCarta(c)));
+  const faltamNaMesa = 5 - p.cartasNaMesa.length;
+  const precisa = faltamNaMesa + 2 * p.oponentes;
+
+  let vitorias = 0;
+  let empates = 0;
+  let fatiaDoPote = 0;
+  const categorias = new Map&lt;CategoriaDeMao, number&gt;(CATEGORIAS.map((c) =&gt; [c, 0]));
+  const pilha = [...restantes];
+
+  for (let s = 0; s &lt; simulacoes; s++) {
+<span class="com">    // Fisher-Yates parcial: embaralha só as primeiras `precisa` posições.</span>
+    for (let i = 0; i &lt; precisa; i++) {
+      const j = i + Math.floor(aleatorio() * (pilha.length - i));
+      [pilha[i], pilha[j]] = [pilha[j] as Carta, pilha[i] as Carta];
+    }
+
+    const mesa = [...p.cartasNaMesa, ...pilha.slice(0, faltamNaMesa)];
+    const minha = avaliarMao([...p.minhasCartas, ...mesa]);
+    const maos: AvaliacaoDeMao[] = [minha];
+    for (let o = 0; o &lt; p.oponentes; o++) {
+      const inicio = faltamNaMesa + 2 * o;
+      maos.push(avaliarMao([...pilha.slice(inicio, inicio + 2), ...mesa]));
+    }
+
+    categorias.set(minha.categoria, (categorias.get(minha.categoria) ?? 0) + 1);
+    const ganhadores = vencedores(maos);
+<span class="com">  …</span></pre>
+<p class="arquivo">packages/sessao/src/index.ts — sessão JWT compartilhada por auth e game-engine</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Sessão do jogador: um token assinado (JWT HS256) guardado num cookie httpOnly.</span>
+<span class="com"> *</span>
+<span class="com"> * O serviço auth EMITE o token no login/cadastro; o game-engine só o VERIFICA com o mesmo</span>
+<span class="com"> * segredo, sem consultar o banco. Assim o jogo não precisa conhecer senhas nem usuários.</span>
+<span class="com"> */</span>
+import { createHmac, timingSafeEqual } from &#x27;node:crypto&#x27;;
+
+export const NOME_DO_COOKIE = &#x27;poker_sessao&#x27;;
+export const VALIDADE_PADRAO_S = 7 * 24 * 60 * 60;</pre>
+<pre><span class="com">/** Devolve os dados se o token for autêntico e não tiver expirado; senão, null. */</span>
+export function verificarSessao(
+  token: string,
+  segredo: string,
+  agora = Date.now(),
+): DadosDaSessao | null {
+  const partes = token.split(&#x27;.&#x27;);
+  if (partes.length !== 3) return null;
+  const [cabecalho, corpo, recebida] = partes as [string, string, string];
+  if (cabecalho !== CABECALHO) return null; <span class="com">// recusa &quot;alg: none&quot; e afins</span>
+
+  const esperada = Buffer.from(assinatura(`${cabecalho}.${corpo}`, segredo));
+  const obtida = Buffer.from(recebida);
+  if (obtida.length !== esperada.length || !timingSafeEqual(obtida, esperada)) return null;
+
+  let dados: unknown;
+  try {
+    dados = JSON.parse(Buffer.from(corpo, &#x27;base64url&#x27;).toString(&#x27;utf8&#x27;));
+  } catch {
+    return null;
+  }
+  const { sub, apelido, exp } = (dados ?? {}) as Record&lt;string, unknown&gt;;
+  if (typeof sub !== &#x27;string&#x27; || typeof apelido !== &#x27;string&#x27; || typeof exp !== &#x27;number&#x27;) {
+    return null;
+  }
+  if (exp * 1000 &lt;= agora) return null;
+  return { usuarioId: sub, apelido };
+}</pre>
+</section>
+
+<!-- ============================ 6.4 ============================ -->
+<section class="capitulo">
+<h2>6.4 Sistema de recomendação: Coach IA</h2>
+<p>O sistema de recomendação implementado é o <b>Coach IA</b>. Ele recomenda <i>a jogada</i> (desistir, passar, pagar, apostar, aumentar ou all-in, com o valor) para a situação atual do jogador, explica o motivo e sugere alternativas. É um sistema <b>híbrido</b>: um núcleo determinístico calcula os números e avalia cada jogada possível segundo o perfil escolhido, e um agente de IA (LLM) usa esses números como <b>ferramentas</b>, decide e explica em linguagem natural. A recomendação final passa por validação: uma jogada não permitida é descartada e substituída pela recomendação por regras.</p>
+
+<div class="nota"><b>Nota sobre o escopo.</b> O planejamento previa também um microsserviço <i>Recommendation</i> que sugere <b>mesas</b> pelo nível do jogador (história H7, Sprint 5). Ele <b>ainda não foi implementado</b>. A recomendação entregue nesta sprint é a recomendação de jogadas do Coach, descrita abaixo.</div>
+
+<h3>Entradas e saídas</h3>
+<table>
+  <thead><tr><th style="width:20%"></th><th>Descrição</th></tr></thead>
+  <tr><td>Entrada</td><td>A visão filtrada do jogador (cartas dele, mesa, pote, apostas, stacks, posição, ações permitidas e histórico público) e o perfil do coach (<code>agressivo</code>, <code>equilibrado</code> ou <code>seguro</code>).</td></tr>
+  <tr><td>Análise imediata</td><td>Equity Monte Carlo (6.000 simulações), pot odds (equity necessária para pagar), chances de cada mão no river e avaliação <i>boa / neutra / ruim</i> de cada jogada.</td></tr>
+  <tr><td>Saída</td><td><code>RecomendacaoDoCoach</code>: jogada, valor, confiança (baixa/média/alta), resumo, explicação, até duas alternativas, um conceito de poker para aprender, ferramentas usadas, fonte (IA ou regras) e modelo.</td></tr>
+  <tr><td>Leitura em tempo real</td><td>A cada carta nova, mesmo fora da vez do jogador: um comentário curto sobre a mão e um plano (ex.: “pagar compensa até 17 fichas”).</td></tr>
+</table>
+
+<h3>Método: filtragem por regras parametrizadas por perfil</h3>
+<p>Cada jogada é classificada comparando a equity com limites que dependem do perfil. Para pagar, a regra compara a <b>margem</b> (equity − equity necessária) com <code>pagarBom</code> e <code>pagarNeutro</code>. A equity necessária vem das pot odds: <code>paraPagar / (pote + paraPagar)</code>.</p>
+<table>
+  <thead><tr><th>Perfil</th><th>subir bom</th><th>subir neutro</th><th>pagar bom</th><th>pagar neutro</th><th>all-in bom</th><th>passar deixa valor</th><th>aposta (% pote)</th></tr></thead>
+  <tr><td>Agressivo</td><td>50%</td><td>35%</td><td>margem ≥ 0</td><td>≥ −8 p.p.</td><td>60%</td><td>55%</td><td>80%</td></tr>
+  <tr><td>Equilibrado (recomendado)</td><td>60%</td><td>45%</td><td>≥ +5 p.p.</td><td>≥ −5 p.p.</td><td>70%</td><td>65%</td><td>67%</td></tr>
+  <tr><td>Seguro</td><td>72%</td><td>60%</td><td>≥ +10 p.p.</td><td>≥ +2 p.p.</td><td>82%</td><td>78%</td><td>50%</td></tr>
+</table>
+
+<p class="arquivo">services/agent-orchestrator/src/analise.ts — parâmetros dos perfis</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Análise numérica determinística: equity por Monte Carlo, pot odds e uma avaliação de</span>
+<span class="com"> * cada jogada possível, de acordo com o perfil do coach. É o que o coach mostra na hora, e</span>
+<span class="com"> * são as &quot;ferramentas&quot; que o agente de IA usa em vez de chutar números.</span>
+<span class="com"> */</span></pre>
+<pre>export const PARAMETROS_DOS_PERFIS: Record&lt;PerfilDoCoach, ParametrosDoPerfil&gt; = {
+  agressivo: {
+    subirBom: 0.5,
+    subirNeutro: 0.35,
+    pagarBom: 0,
+    pagarNeutro: -0.08,
+    allInBom: 0.6,
+    allInNeutro: 0.45,
+    passarDeixaValor: 0.55,
+    fracaoDaAposta: 0.8,
+    fracaoDoAumento: 1,
+  },
+  equilibrado: {
+    subirBom: 0.6,
+    subirNeutro: 0.45,
+    pagarBom: 0.05,
+    pagarNeutro: -0.05,
+    allInBom: 0.7,
+    allInNeutro: 0.55,
+    passarDeixaValor: 0.65,
+    fracaoDaAposta: 2 / 3,
+    fracaoDoAumento: 0.75,
+  },
+  seguro: {
+    subirBom: 0.72,
+    subirNeutro: 0.6,
+    pagarBom: 0.1,
+    pagarNeutro: 0.02,
+    allInBom: 0.82,
+    allInNeutro: 0.7,
+    passarDeixaValor: 0.78,
+    fracaoDaAposta: 0.5,
+    fracaoDoAumento: 0.6,
+  },
+};</pre>
+<p class="arquivo">services/agent-orchestrator/src/analise.ts — avaliação de cada jogada (trecho)</p>
+<pre>export function avaliarPossibilidades(
+  c: ContextoDoJogador,
+  equity: number,
+  necessaria: number | null,
+  perfil: PerfilDoCoach = PERFIL_RECOMENDADO,
+): PossibilidadeDeJogada[] {
+  const p = PARAMETROS_DOS_PERFIS[perfil];
+  const { acoes } = c;
+  const lista: PossibilidadeDeJogada[] = [];
+  const contra = c.oponentes.length === 1 ? &#x27;1 adversário&#x27; : `${c.oponentes.length} adversários`;
+  const margem = necessaria === null ? null : equity - necessaria;
+
+  if (acoes.desistir) {
+    if (c.paraPagar === 0 || margem === null) {
+      lista.push({
+        acao: &#x27;desistir&#x27;,
+        valor: null,
+        avaliacao: &#x27;ruim&#x27;,
+        motivo: &#x27;Passar é de graça: desistir só joga a mão fora.&#x27;,
+      });
+    } else {
+<span class="com">      // Desistir é bom quando pagar seria ruim para este perfil.</span>
+      const pagarSeriaRuim = margem &lt; p.pagarNeutro;
+      lista.push({
+        acao: &#x27;desistir&#x27;,
+        valor: null,
+        avaliacao: pagarSeriaRuim ? &#x27;boa&#x27; : margem &lt; p.pagarBom ? &#x27;neutra&#x27; : &#x27;ruim&#x27;,
+        motivo: pagarSeriaRuim
+          ? `Pagar exige ${pct(necessaria ?? 0)} de equity e você tem ${pct(equity)}.`
+          : `Sua equity (${pct(equity)}) cobre o preço do pote (${pct(necessaria ?? 0)}).`,
+      });
+    }
+  }
+
+  if (acoes.passar) {
+    lista.push(
+      equity &gt;= p.passarDeixaValor
+        ? {
+            acao: &#x27;passar&#x27;,
+            valor: null,
+            avaliacao: &#x27;neutra&#x27;,
+            motivo: `Mão forte (${pct(equity)}): apostar pode tirar mais fichas dos adversários.`,
+          }
+        : {
+            acao: &#x27;passar&#x27;,
+            valor: null,
+            avaliacao: &#x27;boa&#x27;,
+            motivo:
+              c.cartasNaMesa.length === 5
+                ? &#x27;Vai ao showdown sem gastar mais fichas.&#x27;
+                : &#x27;Vê a próxima carta de graça.&#x27;,
+          },
+    );
+  }
+
+  if (acoes.pagar !== undefined &amp;&amp; margem !== null &amp;&amp; necessaria !== null) {
+    const apertada = margem &gt;= p.pagarNeutro &amp;&amp; margem &lt; p.pagarBom;
+    lista.push({
+      acao: &#x27;pagar&#x27;,
+      valor: c.minhaAposta + acoes.pagar,
+      avaliacao: margem &gt;= p.pagarBom ? &#x27;boa&#x27; : margem &gt;= p.pagarNeutro ? &#x27;neutra&#x27; : &#x27;ruim&#x27;,
+      motivo: `Precisa de ${pct(necessaria)} de equity e você tem ${pct(equity)} contra ${contra}.${apertada ? &#x27; Decisão apertada.&#x27; : &#x27;&#x27;}`,
+    });
+<span class="com">  …</span></pre>
+
+<h3>Recomendação por regras (sempre disponível)</h3>
+<p>Escolhe a primeira jogada “boa” numa ordem de prioridade que depende do perfil e da força da mão. A confiança vem da distância entre a equity e o limite da decisão.</p>
+<p class="arquivo">services/agent-orchestrator/src/regras.ts</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Coach determinístico: escolhe uma jogada e escreve a leitura da mão só a partir dos</span>
+<span class="com"> * números da análise e do perfil. É usado quando a IA não está configurada, está ocupada,</span>
+<span class="com"> * demora demais ou responde algo inválido.</span>
+<span class="com"> */</span>
+import type {
+  AnaliseDoCoach,
+  LeituraDoCoach,
+  PossibilidadeDeJogada,
+  RecomendacaoDoCoach,
+} from &#x27;@poker/shared-types&#x27;;
+import { PARAMETROS_DOS_PERFIS } from &#x27;./analise.js&#x27;;
+
+const pct = (x: number) =&gt; `${Math.round(x * 100)}%`;
+
+<span class="com">/**</span>
+<span class="com"> * Confiança pela distância entre a equity e o limite da decisão (o necessário para pagar</span>
+<span class="com"> * ou, sem aposta a pagar, 50%): longe do limite = decisão clara.</span>
+<span class="com"> */</span>
+export function confiancaPelaMargem(a: AnaliseDoCoach): &#x27;baixa&#x27; | &#x27;media&#x27; | &#x27;alta&#x27; {
+  const limite = a.equityNecessaria ?? 0.5;
+  const margem = Math.abs(a.equity - limite);
+  return margem &gt;= 0.15 ? &#x27;alta&#x27; : margem &gt;= 0.05 ? &#x27;media&#x27; : &#x27;baixa&#x27;;
+}
+
+export function recomendarPorRegras(a: AnaliseDoCoach, aviso: string | null): RecomendacaoDoCoach {
+  const p = PARAMETROS_DOS_PERFIS[a.perfil];
+<span class="com">  // Pagar compensa na conta (equity ≥ pot odds)? O perfil seguro, mesmo assim, prefere</span>
+<span class="com">  // desistir quando a margem é pequena (decisão &quot;neutra&quot;).</span>
+  const pagarCompensa = a.equityNecessaria === null || a.equity &gt;= a.equityNecessaria;
+  const prefereDesistir = a.perfil === &#x27;seguro&#x27; || !pagarCompensa;
+  const prioridade =
+    a.equity &gt;= p.subirBom
+      ? [&#x27;aumentar&#x27;, &#x27;apostar&#x27;, &#x27;all-in&#x27;, &#x27;pagar&#x27;, &#x27;passar&#x27;]
+      : prefereDesistir
+        ? [&#x27;passar&#x27;, &#x27;desistir&#x27;, &#x27;pagar&#x27;, &#x27;apostar&#x27;, &#x27;aumentar&#x27;, &#x27;all-in&#x27;]
+        : [&#x27;passar&#x27;, &#x27;pagar&#x27;, &#x27;desistir&#x27;, &#x27;apostar&#x27;, &#x27;aumentar&#x27;, &#x27;all-in&#x27;];
+  const primeira = (avaliacao: PossibilidadeDeJogada[&#x27;avaliacao&#x27;]) =&gt;
+    prioridade
+      .map((acao) =&gt; a.possibilidades.find((x) =&gt; x.acao === acao &amp;&amp; x.avaliacao === avaliacao))
+      .find(Boolean);
+  const escolhida =
+    primeira(&#x27;boa&#x27;) ??
+    primeira(&#x27;neutra&#x27;) ??
+    a.possibilidades.find((x) =&gt; x.acao === &#x27;passar&#x27;) ??
+    a.possibilidades.find((x) =&gt; x.acao === &#x27;desistir&#x27;) ??
+    (a.possibilidades[0] as PossibilidadeDeJogada);
+<span class="com">  …</span></pre>
+
+<h3>Agente de IA (Ollama, em duas fases)</h3>
+<p>Na <b>fase 1 (agêntica)</b>, o modelo decide quais ferramentas chamar: <code>calcular_equity</code> (que pode ser chamada com outro número de oponentes) e <code>avaliar_possibilidades</code>. Na <b>fase 2</b>, a resposta final sai em JSON, obrigada a seguir um esquema (<i>structured output</i>), e é transmitida ao vivo ao jogador. O perfil entra no prompt com o estilo correspondente.</p>
+<p class="arquivo">services/agent-orchestrator/src/agente-ollama.ts</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Agente coach com um modelo local, servido pelo Ollama na mesma máquina do servidor.</span>
+<span class="com"> * Grátis, sem chave e sem enviar nada para fora.</span>
+<span class="com"> *</span>
+<span class="com"> * Modelos locais pequenos seguem formatos com menos precisão que o Claude, então o agente</span>
+<span class="com"> * trabalha em duas fases:</span>
+<span class="com"> *   1. o modelo chama as ferramentas de cálculo quantas vezes quiser (parte agêntica);</span>
+<span class="com"> *   2. a recomendação final vem em saída estruturada: o Ollama força o JSON a seguir o</span>
+<span class="com"> *      esquema, e a resposta ainda passa pela mesma validação do agente com Claude.</span>
+<span class="com"> */</span></pre>
+<pre>  try {
+<span class="com">    // Fase 1: o modelo decide quais cálculos pedir. Assim que tiver usado as duas</span>
+<span class="com">    // ferramentas, segue para a resposta final: uma rodada a mais só geraria texto</span>
+<span class="com">    // descartado (medido: 5 a 11 s a mais por análise). A saída de cada rodada também é</span>
+<span class="com">    // limitada, porque aqui só se esperam pedidos de ferramenta, não texto.</span>
+    for (let rodada = 0; rodada &lt; (o.maxRodadas ?? 3) &amp;&amp; !jaTemOsNumeros(); rodada++) {
+      const r = await o.chamar(
+        {
+          ...comum,
+          options: { ...comum.options, num_predict: 96 },
+          messages: mensagens,
+          tools: FERRAMENTAS,
+        },
+        sinal,
+      );
+      entrada += r.prompt_eval_count ?? 0;
+      saida += r.eval_count ?? 0;
+      const chamadas = r.message.tool_calls ?? [];
+      if (chamadas.length === 0) break;
+
+      mensagens.push({ role: &#x27;assistant&#x27;, content: r.message.content ?? &#x27;&#x27;, tool_calls: chamadas });
+      for (const chamada of chamadas) {
+        const nome = chamada.function.name;
+        usadas.push(nome);
+        const entradaDaFerramenta = argumentos(chamada.function.arguments);
+        const resultado = executarFerramenta(nome, entradaDaFerramenta, c, analise, o);
+        mensagens.push({ role: &#x27;tool&#x27;, tool_name: nome, content: resultado.conteudo });
+        narrar.etapa(descreverEtapa(nome, entradaDaFerramenta, resultado, analise.perfil));
+      }
+    }
+
+<span class="com">    // Se o modelo pulou as ferramentas, os números entram mesmo assim: nunca recomenda no escuro.</span>
+    if (!usadas.includes(&#x27;avaliar_possibilidades&#x27;)) {
+      const r = executarFerramenta(&#x27;avaliar_possibilidades&#x27;, {}, c, analise, o);
+      mensagens.push({
+        role: &#x27;user&#x27;,
+        content: `Resultado de avaliar_possibilidades: ${r.conteudo}`,
+      });
+      narrar.etapa(descreverEtapa(&#x27;avaliar_possibilidades&#x27;, {}, r, analise.perfil));
+    }
+
+<span class="com">    // Fase 2: recomendação final em JSON, no formato exigido, escrita ao vivo para o jogador.</span>
+    narrar.etapa(&#x27;Escrevendo a recomendação…&#x27;);
+    mensagens.push({ role: &#x27;user&#x27;, content: PEDIDO_FINAL });
+    const final = await o.chamar(
+      {
+        ...comum,
+        options: { temperature: 0 },
+        messages: mensagens,
+        format: ESQUEMA_DA_RECOMENDACAO,
+      },
+      sinal,
+      o.aoProgredir ? narrar.escrevendo : undefined,
+    );
+    entrada += final.prompt_eval_count ?? 0;
+    saida += final.eval_count ?? 0;
+
+    const recomendacao = converterRecomendacao(
+      lerJson(final.message.content),
+      c,
+      analise,
+      usadas,
+      o.modelo,
+    );
+    if (!recomendacao) {
+      return semIA(analise, &#x27;A IA local sugeriu uma jogada inválida; usando o coach por regras.&#x27;);
+    }
+<span class="com">    // Modelos pequenos erram a conta da confiança (medido); ela vem direto dos números.</span>
+    return {
+      recomendacao: { ...recomendacao, confianca: confiancaPelaMargem(analise) },
+      tokensDeEntrada: entrada,
+      tokensDeSaida: saida,
+    };
+  } catch (erro) {
+    return semIA(analise, descreverErro(erro, o.modelo));
+  }
+<span class="com">  …</span></pre>
+<p class="arquivo">services/agent-orchestrator/src/ferramentas.ts — estilo de cada perfil no prompt</p>
+<pre>export const ESTILO_DOS_PERFIS: Record&lt;PerfilDoCoach, string&gt; = {
+  agressivo:
+    &#x27;tome a iniciativa. Prefira apostar e aumentar a só pagar, use apostas maiores, considere semi-blefes &#x27; +
+    &#x27;com projetos e blefes ocasionais contra poucos adversários. Só desista com equity bem abaixo do necessário.&#x27;,
+  equilibrado:
+    &#x27;siga os números. Pague quando a equity cobre as pot odds, aposte e aumente por valor com mãos fortes &#x27; +
+    &#x27;(acima de 60%), blefe raramente.&#x27;,
+  seguro:
+    &#x27;proteja as fichas. Pague só com margem clara sobre as pot odds, aposte forte só com mãos muito fortes &#x27; +
+    &#x27;(acima de 70%), evite blefes e all-ins arriscados; na dúvida, passe ou desista.&#x27;,
+};</pre>
+
+<h3>Escolha do provedor de IA</h3>
+<p class="arquivo">services/agent-orchestrator/src/provedor.ts</p>
+<pre><span class="com">/**</span>
+<span class="com"> * Escolhe qual IA o coach usa, a partir das variáveis de ambiente (ou do .env):</span>
+<span class="com"> *</span>
+<span class="com"> *   COACH_PROVEDOR=ollama   modelo local no servidor (padrão sem chave da Anthropic)</span>
+<span class="com"> *   COACH_PROVEDOR=claude   API da Anthropic (padrão quando há credencial)</span>
+<span class="com"> *   COACH_PROVEDOR=regras   sem IA: só o coach por regras</span>
+<span class="com"> */</span></pre>
+<pre>export function escolherProvedor(env: Ambiente = process.env): Provedor {
+  const pedido = env.COACH_PROVEDOR ?? (env.COACH_IA === &#x27;desligado&#x27; ? &#x27;regras&#x27; : undefined);
+  const nome = pedido ?? (temCredencialAnthropic(env) ? &#x27;claude&#x27; : &#x27;ollama&#x27;);
+  const concorrenciaPedida = Number(env.COACH_CONCORRENCIA);
+  const concorrencia = (padrao: number) =&gt;
+    Number.isInteger(concorrenciaPedida) &amp;&amp; concorrenciaPedida &gt; 0 ? concorrenciaPedida : padrao;
+
+  switch (nome) {
+    case &#x27;ollama&#x27;:
+      return provedorOllama(env, concorrencia(1));
+    case &#x27;claude&#x27;:
+      return provedorClaude(env, concorrencia(4));
+    case &#x27;regras&#x27;:
+      return provedorRegras(&#x27;IA desligada (COACH_PROVEDOR=regras).&#x27;);
+    default:
+      return provedorRegras(
+        `COACH_PROVEDOR desconhecido: &quot;${nome}&quot;. Use ollama, claude ou regras.`,
+      );
+  }
+}</pre>
+
+<h3>Salvaguardas</h3>
+<ul>
+  <li>O agente só recebe a visão filtrada e nunca vê cartas ocultas.</li>
+  <li>Os números vêm das ferramentas; a IA é instruída a não inventar probabilidades. Se pular as ferramentas, os números são injetados mesmo assim.</li>
+  <li>A jogada final é validada contra as jogadas permitidas. Se for inválida, vale a recomendação por regras.</li>
+  <li>Prazo de 25 s, fila com limite e prioridade das decisões sobre as leituras. Trocar de perfil cancela o pedido anterior.</li>
+  <li>O cliente mostra a fonte (“Recomendação da IA (qwen3:8b)” ou “Leitura por regras”) e o grau de confiança.</li>
+</ul>
+</section>
+
+<!-- ============================ 6.5 ============================ -->
+<section class="capitulo">
+<h2>6.5 Microsserviços em execução</h2>
+<p>Tela capturada com o sistema rodando (<code>pnpm db:up</code> + <code>pnpm dev</code> + <code>ollama serve</code>). A rota <code>/saude</code> de cada serviço responde <code>ok</code>; o <code>lsof</code> mostra cada processo escutando na sua porta; o <code>docker compose ps</code> mostra o PostgreSQL saudável; e o <code>ollama ps</code> mostra o modelo carregado na GPU.</p>
+<figure>
+  <img src="img/10-microsservicos-em-execucao.jpg" alt="Terminal com a listagem dos microsserviços em execução">
+  <figcaption>Figura 2 — Listagem dos microsserviços em execução: game-engine (:3001), agent-orchestrator (:3002), auth (:3003), web (:5173), PostgreSQL em Docker (:5433) e Ollama (:11434). No momento da captura, a fila do Coach atendia um pedido.</figcaption>
+</figure>
+<table>
+  <thead><tr><th>Serviço</th><th>Porta</th><th>Como sobe</th><th>Verificação</th></tr></thead>
+  <tr><td>game-engine</td><td>3001</td><td><code>pnpm dev</code> (tsx watch)</td><td><code>GET /saude</code></td></tr>
+  <tr><td>agent-orchestrator</td><td>3002 (só local)</td><td><code>pnpm dev</code></td><td><code>GET /saude</code> (provedor, modelo, fila)</td></tr>
+  <tr><td>auth</td><td>3003</td><td><code>pnpm dev</code></td><td><code>GET /saude</code></td></tr>
+  <tr><td>web</td><td>5173</td><td><code>pnpm dev</code> (Vite)</td><td>página carrega</td></tr>
+  <tr><td>PostgreSQL 17</td><td>5433</td><td><code>pnpm db:up</code> (Docker Compose)</td><td>healthcheck <code>pg_isready</code></td></tr>
+  <tr><td>Ollama</td><td>11434</td><td><code>ollama serve</code></td><td><code>ollama ps</code></td></tr>
+</table>
+<div class="nota">Hoje, os três serviços Node rodam como processos (<code>pnpm dev</code> ou <code>pnpm start</code>) e só o PostgreSQL roda em contêiner. Colocar cada serviço no <code>docker compose</code> faz parte do critério de aceite da Sprint 6.</div>
+</section>
+
+<!-- ============================ 7 ============================ -->
+<section class="capitulo">
+<h1>7. Tecnologias por microsserviço</h1>
+<table>
+  <thead><tr><th style="width:20%">Microsserviço</th><th style="width:18%">Linguagem</th><th>Frameworks e bibliotecas</th><th style="width:20%">Banco de dados</th></tr></thead>
+  <tr><td><code>game-engine</code></td><td>TypeScript (Node.js 24)</td><td>Socket.IO 4.8 (WebSocket), <code>node:http</code> (gateway e estáticos), componentes deck, hand-evaluator, action-validator e sessao</td><td>Nenhum (estado em memória)</td></tr>
+  <tr><td><code>auth</code></td><td>TypeScript (Node.js 24)</td><td><code>node:http</code>, <code>node:crypto</code> (scrypt, HMAC), driver <code>pg</code> 8.16, componente sessao</td><td><b>PostgreSQL 17</b> (Docker)</td></tr>
+  <tr><td><code>agent-orchestrator</code></td><td>TypeScript (Node.js 24)</td><td><code>node:http</code>, Ollama 0.40 com o modelo <code>qwen3:8b</code> (8,2 B parâmetros, Q4_K_M), SDK da Anthropic (opcional), componentes equity e hand-evaluator</td><td>Nenhum (cache em memória e logs)</td></tr>
+  <tr><td><code>web</code></td><td>TypeScript + TSX</td><td>React 19, Vite, Socket.IO client, CSS próprio, fonte Pixelify Sans</td><td>Nenhum (só <code>localStorage</code> para preferências)</td></tr>
+</table>
+<h3>Ferramentas transversais</h3>
+<table>
+  <thead><tr><th style="width:30%">Área</th><th>Ferramenta</th></tr></thead>
+  <tr><td>Monorepo e build</td><td>pnpm 9 (workspaces), TypeScript 6 (strict, project references), tsx</td></tr>
+  <tr><td>Testes</td><td>Vitest 5, fast-check (testes baseados em propriedades), pokersolver (referência)</td></tr>
+  <tr><td>Qualidade</td><td>ESLint 10 + typescript-eslint, Prettier</td></tr>
+  <tr><td>CI</td><td>GitHub Actions: formatação, lint, tipos e testes a cada push</td></tr>
+  <tr><td>Infraestrutura</td><td>Docker Compose (PostgreSQL), Ollama</td></tr>
+</table>
+</section>
+
+<!-- ============================ 8 ============================ -->
+<section class="capitulo">
+<h1>8. Telas do sistema, passo a passo</h1>
+
+<div class="passo"><h3>Passo 1 — Acesso (microsserviço auth)</h3>
+<p>O jogador cria uma conta (e-mail, apelido e senha com pelo menos 8 caracteres) ou entra numa conta existente. O formulário chama <code>POST /api/auth/cadastro</code> ou <code>/login</code>, que o gateway repassa ao <code>auth</code>. A resposta grava o cookie de sessão.</p>
+<figure><img src="img/01-acesso.jpg" alt="Tela de acesso"><figcaption>Figura 3 — Tela de acesso: criar conta ou entrar.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 2 — Menu inicial e escolha do tipo de coach</h3>
+<p>Já logado (“Jogando como …”), o jogador escolhe o perfil do Coach IA: <b>Agressivo</b>, <b>Equilibrado (recomendado)</b> ou <b>Seguro</b>. O indicador “Servidor online” mostra a conexão WebSocket com o <code>game-engine</code>.</p>
+<figure><img src="img/02-menu-inicial.jpg" alt="Menu inicial"><figcaption>Figura 4 — Menu inicial com os três perfis do Coach.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 3 — Lobby (game-engine)</h3>
+<p>Lista as mesas em tempo real (evento <code>lobby:mesas</code>), com blinds, lotação e bots. Ao sentar, o jogador recebe 100 big blinds em fichas virtuais.</p>
+<figure><img src="img/03-lobby.jpg" alt="Lobby"><figcaption>Figura 5 — Lobby com as mesas Iniciante, Intermediária e Rápida.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 4 — A mesa: na vez do jogador</h3>
+<p>A mesa mostra as cartas do jogador, as costas das cartas do bot (identificado com o selo <b>BOT</b>), o pote, o tempo restante da vez e a barra de ações com as jogadas permitidas pelo <code>action-validator</code>. O Coach exibe na hora os números calculados pelo <code>agent-orchestrator</code>: equity, pot odds, chances no river e a avaliação de cada jogada no perfil escolhido.</p>
+<figure><img src="img/04-mesa-minha-vez.jpg" alt="Mesa na vez do jogador"><figcaption>Figura 6 — Vez do jogador: números do Coach na hora.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 5 — O Coach IA escrevendo ao vivo</h3>
+<p>Enquanto o modelo local trabalha, o painel lateral mostra os passos do agente (“Calculei a equity contra 1 adversário: 53,4%”, “Avaliei 4 jogadas possíveis no perfil equilibrado”) e o texto da recomendação sendo escrito, com a jogada já destacada (“Jogada: Pagar”).</p>
+<figure><img src="img/05-coach-escrevendo.jpg" alt="Coach escrevendo"><figcaption>Figura 7 — A IA escrevendo ao vivo na lateral (eventos <code>coach:escrevendo</code>).</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 6 — Recomendação final</h3>
+<p>A recomendação validada mostra a fonte e o modelo (“Recomendação da IA (qwen3:8b) · confiança alta”), o resumo, a explicação e as alternativas. O botão “Seguir a sugestão” executa a jogada recomendada.</p>
+<figure><img src="img/06-coach-recomendacao.jpg" alt="Recomendação final"><figcaption>Figura 8 — Recomendação final do Coach.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 7 — Microsserviços destacados na interface principal</h3>
+<p>A mesma tela da mesa, com cada área destacada pelo microsserviço que a atende:</p>
+<ul>
+  <li><b style="color:#c4473c">Vermelho — auth:</b> identidade do jogador no topo (conta e sessão emitida no login).</li>
+  <li><b style="color:#1f8a52">Verde — game-engine:</b> a mesa ao vivo (motor autoritativo, bots, pote e cartas), atualizada por WebSocket.</li>
+  <li><b style="color:#a77f00">Amarelo — game-engine + action-validator:</b> a barra de ações. Só aparecem jogadas válidas, e o servidor valida de novo cada jogada.</li>
+  <li><b style="color:#3f5bd9">Azul — agent-orchestrator + Ollama:</b> o painel do Coach IA.</li>
+</ul>
+<figure><img src="img/07-microsservicos-na-interface.jpg" alt="Microsserviços destacados"><figcaption>Figura 9 — Interface principal com os microsserviços destacados.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 8 — Fim da mão (showdown)</h3>
+<p>No showdown, o servidor revela as cartas de quem chegou ao fim e anuncia o vencedor. O histórico à direita lista os eventos públicos da mão. Fora da vez, o Coach faz a <b>leitura da mão</b> (aqui pelas regras, porque a IA estava ocupada com uma decisão, e o aviso diz isso).</p>
+<figure><img src="img/08-resultado-da-mao.jpg" alt="Resultado da mão"><figcaption>Figura 10 — Showdown: cartas reveladas, vencedor e histórico.</figcaption></figure></div>
+
+<div class="passo"><h3>Passo 9 — Versão para celular</h3>
+<p>O layout é responsivo: no celular, a mesa ocupa a largura da tela e o Coach e o histórico ficam abaixo dela.</p>
+<figure class="celular"><img src="img/09-celular.jpg" alt="Versão celular"><figcaption>Figura 11 — A mesa num celular (390 × 844).</figcaption></figure></div>
+</section>
+
+<!-- ============================ 9 ============================ -->
+<section class="capitulo">
+<h1>9. Código no GitHub e instruções de execução</h1>
+<p><b>Repositório:</b> <a href="https://github.com/davimuritiba/agentic-poker">https://github.com/davimuritiba/agentic-poker</a> (branch <code>feat/sprint-1</code>). O <code>README.md</code> na raiz explica a instalação, as variáveis de ambiente, o Coach IA e o Ollama, as contas e as verificações.</p>
+
+<h3>Estrutura do repositório</h3>
+<pre>agentic-poker/
+├── apps/web/                    cliente React + Vite
+├── services/
+│   ├── game-engine/             API Gateway, lobby, mesas, motor, bots (Socket.IO)
+│   ├── auth/                    contas e sessão (PostgreSQL)
+│   └── agent-orchestrator/      Coach IA (Ollama / Claude / regras)
+├── packages/
+│   ├── shared-types/  deck/  hand-evaluator/
+│   ├── action-validator/  equity/  sessao/
+├── docker-compose.yml           PostgreSQL 17
+├── .env.example                 configuração do Coach e da IA
+└── .github/workflows/ci.yml     CI</pre>
+
+<h3>Como rodar</h3>
+<p>Requisitos: Node.js 24, pnpm 9, Docker e, para a IA local, o Ollama.</p>
+<pre>pnpm install
+cp .env.example .env          <span class="com"># opcional: escolher o provedor do Coach</span>
+pnpm db:up                    <span class="com"># PostgreSQL em Docker (porta 5433)</span>
+ollama serve                  <span class="com"># em outro terminal</span>
+ollama pull qwen3:8b          <span class="com"># uma vez (~5 GB)</span>
+pnpm dev                      <span class="com"># game-engine, auth, agent-orchestrator e web</span>
+<span class="com"># abrir http://localhost:5173</span></pre>
+<p>Para produção local: <code>pnpm build</code> e <code>pnpm start</code>. A interface passa a ser servida pelo gateway, em <code>http://localhost:3001</code>. Sem Ollama, o Coach responde pelas regras; com <code>COACH_PROVEDOR=claude</code> e uma chave no <code>.env</code>, usa o Claude.</p>
+
+<h3>Verificações</h3>
+<pre>pnpm check     <span class="com"># formatação + lint + tipos + 287 testes</span></pre>
+
+<h3>Principais variáveis de ambiente</h3>
+<table>
+  <thead><tr><th style="width:30%">Variável</th><th>Uso</th></tr></thead>
+  <tr><td><code>COACH_PROVEDOR</code></td><td><code>ollama</code> (padrão), <code>claude</code> ou <code>regras</code></td></tr>
+  <tr><td><code>COACH_MODELO</code></td><td>modelo do Ollama (padrão <code>qwen3:8b</code>)</td></tr>
+  <tr><td><code>OLLAMA_URL</code></td><td>endereço do Ollama (padrão <code>http://127.0.0.1:11434</code>)</td></tr>
+  <tr><td><code>COACH_CONCORRENCIA</code>, <code>COACH_FILA_MAX</code></td><td>tamanho da fila da IA</td></tr>
+  <tr><td><code>AUTH_SEGREDO</code></td><td>segredo da sessão (obrigatório em produção, com pelo menos 32 caracteres)</td></tr>
+  <tr><td><code>DATABASE_URL</code></td><td>conexão do auth com o PostgreSQL</td></tr>
+</table>
+</section>
+
+<!-- ============================ 10 ============================ -->
+<section class="capitulo">
+<h1>10. Referências bibliográficas</h1>
+<ol>
+  <li>SOMMERVILLE, Ian. <i>Engenharia de Software</i>. 10. ed. São Paulo: Pearson, 2019.</li>
+  <li>PRESSMAN, Roger S.; MAXIM, Bruce R. <i>Engenharia de Software: uma abordagem profissional</i>. 9. ed. Porto Alegre: AMGH, 2021.</li>
+  <li>NEWMAN, Sam. <i>Building Microservices: Designing Fine-Grained Systems</i>. 2. ed. Sebastopol: O'Reilly Media, 2021.</li>
+  <li>RICHARDSON, Chris. <i>Microservices Patterns: with examples in Java</i>. Shelter Island: Manning, 2018.</li>
+  <li>SCHWABER, Ken; SUTHERLAND, Jeff. <i>The Scrum Guide</i>. 2020. Disponível em: https://scrumguides.org. </li>
+  <li>SZYPERSKI, Clemens. <i>Component Software: Beyond Object-Oriented Programming</i>. 2. ed. Boston: Addison-Wesley, 2002.</li>
+  <li>RUSSELL, Stuart; NORVIG, Peter. <i>Inteligência Artificial: uma abordagem moderna</i>. 4. ed. Rio de Janeiro: GEN LTC, 2022.</li>
+  <li>KNUTH, Donald E. <i>The Art of Computer Programming, vol. 2: Seminumerical Algorithms</i>. 3. ed. Addison-Wesley, 1997. (Fisher-Yates, seção 3.4.2.)</li>
+  <li>SKLANSKY, David. <i>The Theory of Poker</i>. Henderson: Two Plus Two Publishing, 1999.</li>
+  <li>JONES, M.; BRADLEY, J.; SAKIMURA, N. <i>RFC 7519: JSON Web Token (JWT)</i>. IETF, 2015.</li>
+  <li>PERCIVAL, C.; JOSEFSSON, S. <i>RFC 7914: The scrypt Password-Based Key Derivation Function</i>. IETF, 2016.</li>
+  <li>Documentação oficial: Node.js (https://nodejs.org/docs), TypeScript (https://www.typescriptlang.org/docs), React (https://react.dev), Vite (https://vite.dev), Socket.IO (https://socket.io/docs/v4), PostgreSQL 17 (https://www.postgresql.org/docs/17), Ollama (https://github.com/ollama/ollama/tree/main/docs), Qwen3 (https://qwenlm.github.io), Anthropic API (https://docs.anthropic.com), Vitest (https://vitest.dev), fast-check (https://fast-check.dev), pnpm (https://pnpm.io).</li>
+</ol>
+<p class="nota">Confira edição, ano e editora com o exemplar consultado antes da entrega.</p>
+
+<h1 style="margin-top:22pt">11. Vídeo do jogo</h1>
+<p><b>Link do vídeo:</b> [inserir o link aqui, por exemplo do YouTube (não listado) ou do Google Drive]</p>
+<p>Roteiro sugerido (3 a 5 minutos), seguindo a seção 8: (1) <code>pnpm dev</code> e a listagem dos serviços em execução; (2) criar conta e escolher o perfil do coach; (3) sentar numa mesa e adicionar um bot; (4) mostrar o Coach escrevendo ao vivo e seguir a sugestão; (5) trocar de perfil e comparar a recomendação; (6) jogar até um showdown; (7) mostrar os logs JSON do <code>agent-orchestrator</code>.</p>
+</section>
+
+</body>
+</html>

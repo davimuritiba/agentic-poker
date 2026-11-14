@@ -125,6 +125,12 @@ button.fantasma:active:not(:disabled) {
   box-shadow: none;
 }
 
+/* Botão de som: riscado quando desligado. */
+button.botao-som.mudo {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 input {
   font: inherit;
   background: #080c0a;
@@ -359,6 +365,63 @@ input[type='range'] {
   color: var(--destaque);
 }
 
+/* Escolha do tipo de coach no menu: uma opção por linha, a escolhida destacada. */
+.tipo-de-coach {
+  border: none;
+  margin: 0 0 0.3rem;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.tipo-de-coach legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+.opcao-coach {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--superficie-2);
+  box-shadow: inset 0 0 0 2px transparent;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.cartao .opcao-coach {
+  display: flex;
+  margin-bottom: 0;
+  color: var(--texto);
+  font-weight: 400;
+}
+.opcao-coach:hover {
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.opcao-coach.ativa {
+  box-shadow: inset 0 0 0 2px #4c6fe0;
+  background: #18213f;
+}
+.opcao-coach input {
+  flex: none;
+  margin: 0.2rem 0 0;
+  accent-color: #4c6fe0;
+}
+.opcao-coach:has(input:focus-visible) {
+  outline: 2px solid var(--destaque);
+  outline-offset: 2px;
+}
+.opcao-coach-texto {
+  display: grid;
+  gap: 0.1rem;
+}
+.opcao-coach-texto .detalhe {
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
 /* ---------- Conta (login e cadastro) ---------- */
 
 .abas {
@@ -453,11 +516,29 @@ input[type='range'] {
   font-size: 1.2rem;
 }
 
+/*
+ * Mesa e ações na coluna da esquerda, uma embaixo da outra; a barra lateral (coach e
+ * histórico) ocupa as duas linhas à direita. Como ela fica na linha "1fr", crescer não
+ * afasta as ações da mesa.
+ */
 .area-de-jogo {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 1.2rem;
+  grid-template-rows: auto 1fr;
+  column-gap: 1.2rem;
   align-items: start;
+}
+.area-de-jogo > .feltro {
+  grid-column: 1;
+  grid-row: 1;
+}
+.area-de-jogo > .painel-do-jogador {
+  grid-column: 1;
+  grid-row: 2;
+}
+.area-de-jogo > .lateral {
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 
 /*
@@ -513,6 +594,9 @@ input[type='range'] {
   gap: 6px;
 }
 .pote {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0;
   background: rgb(0 0 0 / 40%);
   padding: 0.3rem 0.9rem;
@@ -655,7 +739,7 @@ input[type='range'] {
   font-size: 0.82rem;
   font-weight: 500;
   border-radius: 999px;
-  padding: 2px 9px 2px 3px;
+  padding: 3px 9px 3px 5px;
   white-space: nowrap;
 }
 .aposta.na-frente {
@@ -665,14 +749,64 @@ input[type='range'] {
 .aposta.ao-lado {
   left: calc(50% + var(--ao-lado));
 }
-.aposta::before {
-  content: '';
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--destaque);
-  border: 3px dashed #fff8;
-  box-sizing: border-box;
+
+/* ---------- Fichas (pixel art, ver Fichas.tsx) ---------- */
+
+.ficha {
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+/* Pilha vista de cima: cada ficha sobe 3px e cobre a de baixo, mostrando só a borda. */
+.pilha {
+  position: relative;
+  display: inline-block;
+  width: 16px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 35%));
+}
+.pilha .ficha {
+  position: absolute;
+  left: 0;
+}
+.pilha .ficha:nth-child(1) {
+  bottom: 0;
+}
+.pilha .ficha:nth-child(2) {
+  bottom: 3px;
+}
+.pilha .ficha:nth-child(3) {
+  bottom: 6px;
+}
+.pilha .ficha:nth-child(4) {
+  bottom: 9px;
+}
+.pilha .ficha:nth-child(5) {
+  bottom: 12px;
+}
+
+.camada-de-fichas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.ficha-voando {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  filter: drop-shadow(0 3px 0 rgb(0 0 0 / 35%));
+}
+/* Giro em 4 quadros, como um sprite de moeda girando. */
+.ficha-voando .ficha {
+  animation: girar-ficha 0.28s steps(4) infinite;
+}
+@keyframes girar-ficha {
+  to {
+    transform: scaleX(-1);
+  }
 }
 
 .cartas-do-jogador {
@@ -718,6 +852,76 @@ input[type='range'] {
 .carta.verso {
   background: repeating-conic-gradient(#b02a3d 0 25%, #8c1d2c 0 50%) 0 0 / 8px 8px;
   border: 3px solid #fff;
+}
+/*
+ * Flip em pixel art: a carta encolhe na horizontal em quadros (steps) mostrando o verso,
+ * troca para a face no meio e volta a abrir. O verso é um ::after que some na metade.
+ */
+.carta.virar,
+.carta.dar {
+  position: relative;
+  animation-delay: var(--atraso, 0ms);
+  animation-fill-mode: both;
+}
+.carta.virar {
+  animation-name: virar-carta;
+  animation-duration: 0.4s;
+}
+@keyframes virar-carta {
+  0% {
+    transform: scaleX(1);
+    animation-timing-function: steps(4, jump-end);
+  }
+  50% {
+    transform: scaleX(0.05) translateY(-5px);
+    animation-timing-function: steps(4, jump-start);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+.carta.virar::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 3px solid #fff;
+  background: repeating-conic-gradient(#b02a3d 0 25%, #8c1d2c 0 50%) 0 0 / 8px 8px;
+  opacity: 0;
+  animation: esconder-verso 0.4s step-end both;
+  animation-delay: var(--atraso, 0ms);
+}
+@keyframes esconder-verso {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+/* Distribuição: a carta cai na frente do jogador. */
+.carta.dar {
+  animation-name: dar-carta;
+  animation-duration: 0.3s;
+  animation-timing-function: steps(5, jump-end);
+}
+@keyframes dar-carta {
+  from {
+    transform: translateY(-16px) rotate(-8deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carta.virar,
+  .carta.dar,
+  .carta.virar::after {
+    animation: none;
+  }
 }
 .carta.espaco {
   background: rgb(0 0 0 / 15%);
@@ -895,6 +1099,16 @@ button.atalho:active:not(:disabled) {
 .interruptor input {
   accent-color: #4c6fe0;
 }
+/* Tipo de coach em uso (escolhido no menu inicial). */
+.coach-perfil {
+  font-size: 0.82rem;
+}
+.coach-perfil strong {
+  color: #8fa8ff;
+}
+.recomendacao.leitura {
+  border-top-style: dashed;
+}
 .coach-dica,
 .coach-legenda,
 .coach-rodape,
@@ -974,6 +1188,63 @@ button.coach-pedir:hover:not(:disabled) {
   padding: 0.4rem 0.55rem;
 }
 
+/* ---------- Coach escrevendo ao vivo ---------- */
+
+/* Cursor piscando no fim do texto que a IA está escrevendo. */
+.cursor-ia {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: #7d95ff;
+  animation: cursor-ia 1s steps(1) infinite;
+}
+@keyframes cursor-ia {
+  50% {
+    opacity: 0;
+  }
+}
+.recomendacao.ao-vivo {
+  border-top-style: dashed;
+}
+/* Passos do agente: o último (em andamento) pulsa; os feitos ganham um ✓. */
+.etapas-do-agente {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+.etapas-do-agente li::before {
+  content: '✓ ';
+  color: var(--sucesso);
+}
+.etapas-do-agente li.atual {
+  color: var(--texto);
+  animation: etapa-atual 1.2s ease-in-out infinite;
+}
+.etapas-do-agente li.atual::before {
+  content: '› ';
+  color: #7d95ff;
+}
+@keyframes etapa-atual {
+  50% {
+    opacity: 0.55;
+  }
+}
+.jogada-ao-vivo strong {
+  color: var(--destaque);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-ia,
+  .etapas-do-agente li.atual {
+    animation: none;
+  }
+}
+
 /* ---------- Celular ---------- */
 
 @media (max-width: 980px) {
@@ -981,6 +1252,12 @@ button.coach-pedir:hover:not(:disabled) {
   .area-de-jogo,
   .lateral {
     display: contents;
+  }
+  .area-de-jogo > .feltro,
+  .area-de-jogo > .painel-do-jogador,
+  .area-de-jogo > .lateral {
+    grid-column: auto;
+    grid-row: auto;
   }
   .feltro {
     order: 1;

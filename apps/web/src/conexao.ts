@@ -5,7 +5,10 @@
 import type {
   Acao,
   AnaliseDoCoach,
+  EscritaDoCoach,
   EventosDoCliente,
+  LeituraDoCoach,
+  PedidoAoCoach,
   RecomendacaoDoCoach,
   EventosDoServidor,
   Resposta,
@@ -97,8 +100,8 @@ export function useConexao(usuarioId: string | null, aoPerderSessao: () => void)
   );
 
   const pedirCoach = useCallback(
-    async (): Promise<Resposta> =>
-      socket.current ? socket.current.emitWithAck('coach:pedir') : SEM_CONEXAO,
+    async (pedido: PedidoAoCoach): Promise<Resposta> =>
+      socket.current ? socket.current.emitWithAck('coach:pedir', pedido) : SEM_CONEXAO,
     [],
   );
 
@@ -109,20 +112,30 @@ export function useConexao(usuarioId: string | null, aoPerderSessao: () => void)
 function useCoach(socket: SocketDoJogo | null) {
   const [analise, setAnalise] = useState<AnaliseDoCoach | null>(null);
   const [recomendacao, setRecomendacao] = useState<RecomendacaoDoCoach | null>(null);
+  const [leitura, setLeitura] = useState<LeituraDoCoach | null>(null);
+  /** O que a IA está escrevendo agora (passos e texto parcial), até a resposta final. */
+  const [escrita, setEscrita] = useState<EscritaDoCoach | null>(null);
 
   useEffect(() => {
     if (!socket) return;
     const aoAnalisar = (a: AnaliseDoCoach) => {
       setAnalise(a);
-      setRecomendacao(null); // a recomendação desta análise ainda vai chegar
+      setEscrita(null);
+      // O texto da IA desta análise ainda vai chegar.
+      if (a.modo === 'decisao') setRecomendacao(null);
+      else setLeitura(null);
     };
     socket.on('coach:analise', aoAnalisar);
     socket.on('coach:recomendacao', setRecomendacao);
+    socket.on('coach:leitura', setLeitura);
+    socket.on('coach:escrevendo', setEscrita);
     return () => {
       socket.off('coach:analise', aoAnalisar);
       socket.off('coach:recomendacao', setRecomendacao);
+      socket.off('coach:leitura', setLeitura);
+      socket.off('coach:escrevendo', setEscrita);
     };
   }, [socket]);
 
-  return { analise, recomendacao };
+  return { analise, recomendacao, leitura, escrita };
 }

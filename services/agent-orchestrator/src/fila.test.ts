@@ -11,6 +11,35 @@ function tarefaControlada() {
 const semPrazo = () => new AbortController().signal;
 const tique = () => new Promise((r) => setTimeout(r, 0));
 
+describe('FilaDaIA: baixa prioridade', () => {
+  it('executarSeLivre roda quando a IA está livre', async () => {
+    const fila = new FilaDaIA(1, 5);
+    await expect(fila.executarSeLivre(async () => 'leitura')).resolves.toBe('leitura');
+    expect(fila.emAndamento).toBe(0);
+  });
+
+  it('executarSeLivre recusa na hora se há decisão rodando ou esperando', async () => {
+    const fila = new FilaDaIA(1, 5);
+    const a = tarefaControlada();
+    const decisao = fila.executar(a.tarefa, semPrazo());
+    await expect(fila.executarSeLivre(async () => 'leitura')).rejects.toBeInstanceOf(FilaCheia);
+    a.liberar();
+    await decisao;
+  });
+
+  it('uma leitura rodando não impede a decisão de entrar na fila', async () => {
+    const fila = new FilaDaIA(1, 5);
+    const leitura = tarefaControlada();
+    const pLeitura = fila.executarSeLivre(leitura.tarefa);
+    const pDecisao = fila.executar(async () => 'decisao', semPrazo());
+    await tique();
+    expect(fila.naFila).toBe(1);
+    leitura.liberar();
+    await expect(pDecisao).resolves.toBe('decisao');
+    await pLeitura;
+  });
+});
+
 describe('FilaDaIA', () => {
   it('roda no máximo `limite` tarefas ao mesmo tempo, na ordem de chegada', async () => {
     const fila = new FilaDaIA(1, 5);

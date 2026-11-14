@@ -9,13 +9,20 @@ import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { segredoDaSessao } from '@poker/sessao';
 import type {
+  EscritaDoCoach,
   EventosDoCliente,
   EventosDoServidor,
   Identificacao,
   Resposta,
 } from '@poker/shared-types';
 import { Server, type Socket } from 'socket.io';
-import { LimiteDoCoach, pedirAnalise, pedirRecomendacao } from './coach.js';
+import {
+  LimiteDoCoach,
+  lerPedidoAoCoach,
+  pedirAnalise,
+  pedirLeitura,
+  pedirRecomendacao,
+} from './coach.js';
 import { identificacaoDoCookie, lerAcao } from './entrada.js';
 import { criarServidorDeEstaticos } from './estaticos.js';
 import { Lobby } from './lobby.js';
@@ -33,7 +40,11 @@ const URL_DO_AUTH = process.env.AUTH_URL ?? 'http://127.0.0.1:3003';
 const PASTA_WEB = fileURLToPath(new URL('../../../../apps/web/dist', import.meta.url));
 
 const conexoesPorMesa = new Map<string, Set<Conexao>>();
-const limiteDoCoach = new LimiteDoCoach();
+// Decisão: sem "um por vez", para que trocar de perfil no meio da vez funcione na hora (o
+// orquestrador cancela o pedido do perfil antigo); o intervalo mínimo evita abuso.
+const limiteDoCoach = new LimiteDoCoach(700, { umPorVez: false });
+// A leitura é automática (a cada carta nova): um pedido por vez, com intervalo curto.
+const limiteDaLeitura = new LimiteDoCoach(500);
 const mesasParaAtualizar = new Set<string>();
 
 const lobby = new Lobby((mesaId) => {
@@ -134,32 +145,42 @@ io.on('connection', (conexao: Conexao) => {
     }),
   );
 
-  // Coach IA: os números chegam rápido (coach:analise); a recomendação do agente,
-  // que leva alguns segundos, chega depois (coach:recomendacao).
-  conexao.on('coach:pedir', async (responder: unknown) => {
+  // Coach IA. Os números chegam rápido (coach:analise). Depois, conforme o modo:
+  //   decisao (vez do jogador) → recomendação do agente (coach:recomendacao);
+  //   leitura (qualquer momento da mão) → comentário curto sobre a mão (coach:leitura).
+  conexao.on('coach:pedir', async (dado: unknown, responder: unknown) => {
     const responda = (r: Resposta) => {
       if (typeof responder === 'function') responder(r);
     };
     const mesa = mesaDa(conexao);
     if (!mesa) return responda({ ok: false, motivo: 'Entre em uma mesa primeiro.' });
+    const { modo, perfil } = lerPedidoAoCoach(dado);
     const jogadorId = conexao.data.jogadorId;
     const visao = mesa.visao(jogadorId); // a mesma visão filtrada que o jogador vê
-    if (!visao.voce?.acoes) {
+    if (modo === 'decisao' && !visao.voce?.acoes) {
       return responda({ ok: false, motivo: 'O coach analisa a sua jogada quando for a sua vez.' });
     }
-    const bloqueio = limiteDoCoach.tentarComecar(jogadorId);
+    const limite = modo === 'decisao' ? limiteDoCoach : limiteDaLeitura;
+    const bloqueio = limite.tentarComecar(jogadorId);
     if (bloqueio) return responda({ ok: false, motivo: bloqueio });
 
     try {
-      const analise = await pedirAnalise(visao);
+      const analise = await pedirAnalise(visao, perfil);
       if (!analise.ok) return responda(analise);
       conexao.emit('coach:analise', analise.dados);
       responda({ ok: true });
 
-      const recomendacao = await pedirRecomendacao(visao);
-      if (recomendacao.ok) conexao.emit('coach:recomendacao', recomendacao.dados);
+      // A IA escreve ao vivo: cada pedaço de texto vai direto para a tela do jogador.
+      const aoEscrever = (escrita: EscritaDoCoach) => conexao.emit('coach:escrevendo', escrita);
+      if (modo === 'decisao') {
+        const recomendacao = await pedirRecomendacao(visao, perfil, aoEscrever);
+        if (recomendacao.ok) conexao.emit('coach:recomendacao', recomendacao.dados);
+      } else {
+        const leitura = await pedirLeitura(visao, perfil, aoEscrever);
+        if (leitura.ok) conexao.emit('coach:leitura', leitura.dados);
+      }
     } finally {
-      limiteDoCoach.terminar(jogadorId);
+      limite.terminar(jogadorId);
     }
   });
 

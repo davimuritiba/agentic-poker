@@ -7,7 +7,13 @@
  */
 import type { Acao } from './acao.js';
 import type { Carta } from './carta.js';
-import type { AnaliseDoCoach, RecomendacaoDoCoach } from './coach.js';
+import type {
+  AnaliseDoCoach,
+  EscritaDoCoach,
+  LeituraDoCoach,
+  PedidoAoCoach,
+  RecomendacaoDoCoach,
+} from './coach.js';
 import type { Fichas } from './fichas.js';
 
 /** Intervalo de valores totais permitidos para `apostar` ou `aumentar`. */
@@ -160,6 +166,10 @@ export interface EventosDoServidor {
   'coach:analise': (analise: AnaliseDoCoach) => void;
   /** Recomendação do agente: chega depois (a IA leva alguns segundos). */
   'coach:recomendacao': (recomendacao: RecomendacaoDoCoach) => void;
+  /** Comentário da IA sobre a mão atual, a cada nova etapa. */
+  'coach:leitura': (leitura: LeituraDoCoach) => void;
+  /** A IA escrevendo ao vivo: passos do agente e texto parcial, antes da resposta final. */
+  'coach:escrevendo': (escrita: EscritaDoCoach) => void;
 }
 
 export interface EventosDoCliente {
@@ -167,6 +177,6 @@ export interface EventosDoCliente {
   'mesa:sair': (responder: (r: Resposta) => void) => void;
   'mesa:adicionar-bot': (responder: (r: Resposta) => void) => void;
   'mesa:acao': (acao: Acao, responder: (r: Resposta) => void) => void;
-  /** Pede ao Coach IA uma análise da situação atual do jogador. */
-  'coach:pedir': (responder: (r: Resposta) => void) => void;
+  /** Pede ao Coach IA uma análise da situação atual do jogador, no modo e perfil dados. */
+  'coach:pedir': (pedido: PedidoAoCoach, responder: (r: Resposta) => void) => void;
 }

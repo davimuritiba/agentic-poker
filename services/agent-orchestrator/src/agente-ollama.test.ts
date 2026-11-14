@@ -15,6 +15,7 @@ import {
 } from './agente-ollama.js';
 import { analisar } from './analise.js';
 import { montarContexto } from './contexto.js';
+import type { ProgressoDoAgente } from './ferramentas.js';
 
 const OPCOES = { simulacoes: 3_000, aleatorio: semente(11) };
 
@@ -24,14 +25,22 @@ const responde = (message: Partial<MensagemOllama>): RespostaOllama => ({
   eval_count: 40,
 });
 
-/** Ollama simulado: devolve as respostas em sequência e guarda o que recebeu. */
+/**
+ * Ollama simulado: devolve as respostas em sequência e guarda o que recebeu. Quando pedem
+ * streaming, entrega o texto de 6 em 6 caracteres, como o modelo gerando aos poucos.
+ */
 function ollamaFalso(respostas: (RespostaOllama | Error)[]) {
   const corpos: Record<string, unknown>[] = [];
-  const chamar: ChamarOllama = async (corpo) => {
+  const chamar: ChamarOllama = async (corpo, _sinal, aoEscrever) => {
     corpos.push(structuredClone(corpo));
     const r = respostas.shift();
     if (!r) throw new Error('sem mais respostas');
     if (r instanceof Error) throw r;
+    if (aoEscrever) {
+      for (let i = 6; i < r.message.content.length + 6; i += 6) {
+        aoEscrever(r.message.content.slice(0, i));
+      }
+    }
     return r;
   };
   return { chamar, corpos };
@@ -92,6 +101,45 @@ describe('agente com Ollama', () => {
       required: expect.arrayContaining(['acao']),
     });
     expect(corpos[1]?.tools).toBeUndefined();
+  });
+
+  it('ao vivo: conta os passos do agente e escreve a recomendação aos poucos', async () => {
+    const { c, a } = preparar();
+    const { chamar } = ollamaFalso([
+      responde({
+        tool_calls: [
+          { function: { name: 'calcular_equity', arguments: { oponentes: 1 } } },
+          { function: { name: 'avaliar_possibilidades', arguments: {} } },
+        ],
+      }),
+      responde({ content: JSON.stringify(RECOMENDACAO_VALIDA) }),
+    ]);
+    const progressos: ProgressoDoAgente[] = [];
+
+    const r = await recomendarComOllama(c, a, {
+      ...OPCOES,
+      chamar,
+      modelo: 'qwen3:8b',
+      aoProgredir: (p) => progressos.push(p),
+    });
+
+    // Passos, na ordem em que aconteceram.
+    expect(progressos.at(-1)?.etapas).toEqual([
+      'Analisando a situação da mesa…',
+      expect.stringMatching(/^Calculei a equity contra 1 adversário\(s\): \d+(\.\d)?%\.$/),
+      'Avaliei 4 jogada(s) possíveis no perfil equilibrado.',
+      'Escrevendo a recomendação…',
+    ]);
+    // O texto cresce aos poucos, sem nunca "voltar", até ficar igual ao final.
+    const resumos = progressos.map((p) => p.texto.resumo ?? '');
+    resumos.forEach((resumo, i) => expect(resumo.startsWith(resumos[i - 1] ?? '')).toBe(true));
+    expect(resumos.filter(Boolean).length).toBeGreaterThan(3);
+    expect(progressos.at(-1)?.texto).toMatchObject({
+      acao: 'aumentar',
+      resumo: RECOMENDACAO_VALIDA.resumo,
+    });
+    // A resposta final é a mesma de sempre.
+    expect(r.recomendacao).toMatchObject({ fonte: 'ia', acao: 'aumentar', valor: 150 });
   });
 
   it('se o modelo pedir uma ferramenta por vez, continua até ter as duas', async () => {
