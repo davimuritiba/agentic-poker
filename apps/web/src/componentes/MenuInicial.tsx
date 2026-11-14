@@ -1,5 +1,13 @@
-import type { Carta, Usuario } from '@poker/shared-types';
+import {
+  DESCRICOES_DOS_PERFIS,
+  NOMES_DOS_PERFIS,
+  PERFIS_DO_COACH,
+  type Carta,
+  type PerfilDoCoach,
+  type Usuario,
+} from '@poker/shared-types';
 import { useState } from 'react';
+import { lerPerfil, salvarPerfil } from '../perfilDoCoach.js';
 import { Acesso } from './Acesso.js';
 import { CartaVisual } from './CartaVisual.js';
 
@@ -37,6 +45,11 @@ const RANKING_DAS_MAOS: [string, string][] = [
 
 export function MenuInicial({ usuario, conectado, aoEntrar, jogar, sairDaConta }: Props) {
   const [mostrarRegras, setMostrarRegras] = useState(false);
+  const [perfil, setPerfil] = useState(lerPerfil);
+  const escolherPerfil = (novo: PerfilDoCoach) => {
+    setPerfil(novo);
+    salvarPerfil(novo);
+  };
   const botaoDeRegras = (
     <button
       type="button"
@@ -72,6 +85,24 @@ export function MenuInicial({ usuario, conectado, aoEntrar, jogar, sairDaConta }
           <p className="boas-vindas">
             Jogando como <strong>{usuario.apelido}</strong>
           </p>
+          <fieldset className="tipo-de-coach">
+            <legend>Tipo de coach</legend>
+            {PERFIS_DO_COACH.map((p) => (
+              <label key={p} className={perfil === p ? 'opcao-coach ativa' : 'opcao-coach'}>
+                <input
+                  type="radio"
+                  name="perfil-do-coach"
+                  value={p}
+                  checked={perfil === p}
+                  onChange={() => escolherPerfil(p)}
+                />
+                <span className="opcao-coach-texto">
+                  <strong>{NOMES_DOS_PERFIS[p]}</strong>
+                  <span className="detalhe">{DESCRICOES_DOS_PERFIS[p]}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
           <button type="button" className="principal" onClick={jogar} autoFocus>
             Jogar
           </button>

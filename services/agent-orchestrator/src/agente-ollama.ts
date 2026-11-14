@@ -8,20 +8,28 @@
  *   2. a recomendação final vem em saída estruturada: o Ollama força o JSON a seguir o
  *      esquema, e a resposta ainda passa pela mesma validação do agente com Claude.
  */
-import type { AnaliseDoCoach } from '@poker/shared-types';
+import type { AnaliseDoCoach, LeituraDoCoach, TextoParcialDoCoach } from '@poker/shared-types';
 import type { OpcoesDeAnalise } from './analise.js';
 import type { ContextoDoJogador } from './contexto.js';
-import { confiancaPelaMargem } from './regras.js';
 import {
+  ESQUEMA_DA_LEITURA,
   ESQUEMA_DA_RECOMENDACAO,
   FERRAMENTAS_DE_CALCULO,
   INSTRUCOES,
+  converterLeitura,
   converterRecomendacao,
+  descreverEtapa,
   executarFerramenta,
+  pedidoDaLeitura,
   semIA,
   situacaoParaIA,
+  textoParcial,
+  type AoProgredir,
   type ResultadoDoAgente,
 } from './ferramentas.js';
+import { lerJsonParcial } from './json-parcial.js';
+import { lerLinhas } from '@poker/shared-types';
+import { confiancaPelaMargem, lerPorRegras } from './regras.js';
 
 /** Mensagem no formato da API de chat do Ollama. */
 export interface MensagemOllama {
@@ -48,26 +56,50 @@ export class ErroDoOllama extends Error {
   }
 }
 
-/** Como o agente chama o Ollama. Injetável para testar sem o Ollama instalado. */
+/**
+ * Como o agente chama o Ollama. Injetável para testar sem o Ollama instalado.
+ * Com `aoEscrever`, a resposta vem em streaming: `aoEscrever` recebe o texto acumulado a
+ * cada pedaço que o modelo gera.
+ */
 export type ChamarOllama = (
   corpo: Record<string, unknown>,
   sinal: AbortSignal,
+  aoEscrever?: (acumulado: string) => void,
 ) => Promise<RespostaOllama>;
 
 /** Implementação real: POST /api/chat no Ollama. */
 export function clienteOllama(url: string): ChamarOllama {
-  return async (corpo, sinal) => {
+  return async (corpo, sinal, aoEscrever) => {
     const resposta = await fetch(`${url}/api/chat`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...corpo, stream: false }),
+      body: JSON.stringify({ ...corpo, stream: aoEscrever !== undefined }),
       signal: sinal,
     });
     if (!resposta.ok) {
       const texto = await resposta.text().catch(() => '');
       throw new ErroDoOllama(resposta.status, texto.slice(0, 300));
     }
-    return (await resposta.json()) as RespostaOllama;
+    if (!aoEscrever || !resposta.body) return (await resposta.json()) as RespostaOllama;
+
+    // Streaming: uma linha JSON por pedaço gerado; a última traz `done` e as contagens.
+    let acumulado = '';
+    let contagens: Pick<RespostaOllama, 'prompt_eval_count' | 'eval_count'> = {};
+    for await (const linha of lerLinhas(resposta.body)) {
+      const parte = JSON.parse(linha) as Partial<RespostaOllama> & {
+        done?: boolean;
+        error?: string;
+      };
+      if (parte.error) throw new ErroDoOllama(500, parte.error);
+      if (parte.message?.content) {
+        acumulado += parte.message.content;
+        aoEscrever(acumulado);
+      }
+      if (parte.done) {
+        contagens = { prompt_eval_count: parte.prompt_eval_count, eval_count: parte.eval_count };
+      }
+    }
+    return { message: { role: 'assistant', content: acumulado }, ...contagens };
   };
 }
 
@@ -76,6 +108,33 @@ export interface OpcoesDoAgenteOllama extends OpcoesDeAnalise {
   readonly modelo: string;
   readonly sinal?: AbortSignal;
   readonly maxRodadas?: number;
+  /** Recebe os passos do agente e o texto da recomendação enquanto ela é escrita. */
+  readonly aoProgredir?: AoProgredir;
+}
+
+/**
+ * Repassa o progresso ao vivo, sem repetir quando nada mudou (o modelo gera pedaços
+ * que às vezes não completam nenhum campo visível).
+ */
+function narrador(aoProgredir: AoProgredir | undefined) {
+  const etapas: string[] = [];
+  let ultimo = '';
+  const enviar = (texto: TextoParcialDoCoach = {}) => {
+    if (!aoProgredir) return;
+    const progresso = { etapas: [...etapas], texto };
+    const assinatura = JSON.stringify(progresso);
+    if (assinatura === ultimo) return;
+    ultimo = assinatura;
+    aoProgredir(progresso);
+  };
+  return {
+    etapa(frase: string) {
+      etapas.push(frase);
+      enviar();
+    },
+    /** Para usar como `aoEscrever`: lê o JSON parcial e envia os campos já escritos. */
+    escrevendo: (acumulado: string) => enviar(textoParcial(lerJsonParcial(acumulado))),
+  };
 }
 
 const FERRAMENTAS = FERRAMENTAS_DE_CALCULO.map((f) => ({
@@ -112,6 +171,8 @@ export async function recomendarComOllama(
   let entrada = 0;
   let saida = 0;
   const jaTemOsNumeros = () => FERRAMENTAS_DE_CALCULO.every((f) => usadas.includes(f.nome));
+  const narrar = narrador(o.aoProgredir);
+  narrar.etapa('Analisando a situação da mesa…');
 
   try {
     // Fase 1: o modelo decide quais cálculos pedir. Assim que tiver usado as duas
@@ -137,14 +198,10 @@ export async function recomendarComOllama(
       for (const chamada of chamadas) {
         const nome = chamada.function.name;
         usadas.push(nome);
-        const resultado = executarFerramenta(
-          nome,
-          argumentos(chamada.function.arguments),
-          c,
-          analise,
-          o,
-        );
+        const entradaDaFerramenta = argumentos(chamada.function.arguments);
+        const resultado = executarFerramenta(nome, entradaDaFerramenta, c, analise, o);
         mensagens.push({ role: 'tool', tool_name: nome, content: resultado.conteudo });
+        narrar.etapa(descreverEtapa(nome, entradaDaFerramenta, resultado, analise.perfil));
       }
     }
 
@@ -155,9 +212,11 @@ export async function recomendarComOllama(
         role: 'user',
         content: `Resultado de avaliar_possibilidades: ${r.conteudo}`,
       });
+      narrar.etapa(descreverEtapa('avaliar_possibilidades', {}, r, analise.perfil));
     }
 
-    // Fase 2: recomendação final em JSON, no formato exigido.
+    // Fase 2: recomendação final em JSON, no formato exigido, escrita ao vivo para o jogador.
+    narrar.etapa('Escrevendo a recomendação…');
     mensagens.push({ role: 'user', content: PEDIDO_FINAL });
     const final = await o.chamar(
       {
@@ -167,6 +226,7 @@ export async function recomendarComOllama(
         format: ESQUEMA_DA_RECOMENDACAO,
       },
       sinal,
+      o.aoProgredir ? narrar.escrevendo : undefined,
     );
     entrada += final.prompt_eval_count ?? 0;
     saida += final.eval_count ?? 0;
@@ -189,6 +249,45 @@ export async function recomendarComOllama(
     };
   } catch (erro) {
     return semIA(analise, descreverErro(erro, o.modelo));
+  }
+}
+
+/**
+ * Leitura da mão em tempo real (fora da vez do jogador): uma chamada só, sem ferramentas,
+ * porque os números já vão no pedido. Curta para ficar rápida.
+ */
+export async function lerComOllama(
+  c: ContextoDoJogador,
+  analise: AnaliseDoCoach,
+  o: { chamar: ChamarOllama; modelo: string; sinal?: AbortSignal; aoProgredir?: AoProgredir },
+): Promise<LeituraDoCoach> {
+  const narrar = narrador(o.aoProgredir);
+  narrar.etapa('Lendo a sua mão…');
+  try {
+    const r = await o.chamar(
+      {
+        model: o.modelo,
+        think: false,
+        keep_alive: '30m',
+        options: { temperature: 0.3, num_predict: 160 },
+        messages: [
+          { role: 'system', content: INSTRUCOES },
+          { role: 'user', content: pedidoDaLeitura(c, analise) },
+        ],
+        format: ESQUEMA_DA_LEITURA,
+      },
+      o.sinal ?? AbortSignal.timeout(20_000),
+      o.aoProgredir ? narrar.escrevendo : undefined,
+    );
+    return (
+      converterLeitura(lerJson(r.message.content), analise, o.modelo) ??
+      lerPorRegras(analise, 'A IA local respondeu fora do formato; leitura pelas regras.')
+    );
+  } catch (erro) {
+    return lerPorRegras(
+      analise,
+      descreverErro(erro, o.modelo).replace('o coach por regras', 'as regras'),
+    );
   }
 }
 

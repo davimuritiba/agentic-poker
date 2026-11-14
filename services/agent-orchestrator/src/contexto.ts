@@ -26,24 +26,37 @@ export interface ContextoDoJogador {
     readonly ehBot: boolean;
   }[];
   readonly posicao: string;
+  /** Verdadeiro quando é a vez do jogador: só então há jogadas a recomendar. */
+  readonly minhaVez: boolean;
+  /** Jogadas permitidas agora (todas falsas/ausentes quando não é a vez do jogador). */
   readonly acoes: AcoesPermitidas;
   /** Histórico público da mão, em texto. */
   readonly historico: readonly string[];
 }
 
-/** Monta o contexto, ou explica por que não dá para analisar agora. */
+const SEM_ACOES: AcoesPermitidas = { desistir: false, passar: false };
+
+/**
+ * Monta o contexto, ou explica por que não dá para analisar agora.
+ * `exigirVez`: para recomendar uma jogada, precisa ser a vez do jogador; para a leitura
+ * da mão, basta ele estar na mão com cartas.
+ */
 export function montarContexto(
   visao: VisaoDaMesa,
+  { exigirVez = true }: { exigirVez?: boolean } = {},
 ): { ok: true; contexto: ContextoDoJogador } | { ok: false; motivo: string } {
   const euId = visao.voce?.id;
   const eu = visao.jogadores.find((j) => j.id === euId);
   if (!eu || !eu.cartas || eu.cartas.length !== 2) {
     return { ok: false, motivo: 'Você não está participando desta mão.' };
   }
-  if (eu.situacao !== 'ativo')
+  if (eu.situacao !== 'ativo' && !(eu.situacao === 'all-in' && !exigirVez)) {
     return { ok: false, motivo: 'Você não tem decisão a tomar nesta mão.' };
-  const acoes = visao.voce?.acoes;
-  if (!acoes) return { ok: false, motivo: 'O coach analisa a sua jogada quando for a sua vez.' };
+  }
+  const acoes = visao.voce?.acoes ?? null;
+  if (!acoes && exigirVez) {
+    return { ok: false, motivo: 'O coach analisa a sua jogada quando for a sua vez.' };
+  }
   if (![0, 3, 4, 5].includes(visao.cartasNaMesa.length)) {
     return { ok: false, motivo: 'Situação da mesa inválida.' };
   }
@@ -73,11 +86,12 @@ export function montarContexto(
       minhaAposta: eu.apostaNaRodada,
       pote: visao.pote + apostas,
       maiorAposta: visao.maiorAposta,
-      paraPagar: acoes.pagar ?? 0,
+      paraPagar: acoes?.pagar ?? 0,
       bigBlind: visao.bigBlind,
       oponentes,
       posicao: posicaoDe(visao, eu.id),
-      acoes,
+      minhaVez: acoes !== null,
+      acoes: acoes ?? SEM_ACOES,
       historico: visao.eventos.flatMap((ev): string[] => {
         switch (ev.tipo) {
           case 'blind':

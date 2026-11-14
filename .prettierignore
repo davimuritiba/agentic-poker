@@ -1,3 +1,6 @@
 pnpm-lock.yaml
 dist/
 coverage/
+
+# Relatório gerado (o HTML tem blocos de código pré-formatados)
+docs/relatorio/*.html

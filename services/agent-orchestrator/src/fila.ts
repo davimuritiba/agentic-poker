@@ -40,6 +40,21 @@ export class FilaDaIA {
       if (this.esperando.length >= this.maxEsperando) throw new FilaCheia();
       await this.aguardarVez(sinal); // recebe a vaga de quem terminou, já contada em `ativos`
     }
+    return this.rodar(tarefa);
+  }
+
+  /**
+   * Baixa prioridade: só roda se a IA estiver livre agora (vaga sobrando e ninguém
+   * esperando); senão, recusa na hora. Usado na leitura da mão, para nunca atrasar a
+   * decisão de alguém.
+   */
+  async executarSeLivre<T>(tarefa: () => Promise<T>): Promise<T> {
+    if (this.ativos >= this.limite || this.esperando.length > 0) throw new FilaCheia();
+    this.ativos++;
+    return this.rodar(tarefa);
+  }
+
+  private async rodar<T>(tarefa: () => Promise<T>): Promise<T> {
     try {
       return await tarefa();
     } finally {

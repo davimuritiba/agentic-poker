@@ -1,7 +1,7 @@
 /**
  * Análise numérica determinística: equity por Monte Carlo, pot odds e uma avaliação de
- * cada jogada possível. É o que o coach mostra na hora, e são as "ferramentas" que o
- * agente de IA usa em vez de chutar números.
+ * cada jogada possível, de acordo com o perfil do coach. É o que o coach mostra na hora, e
+ * são as "ferramentas" que o agente de IA usa em vez de chutar números.
  */
 import { calcularEquity, equityNecessaria, type ResultadoDeEquity } from '@poker/equity';
 import {
@@ -10,7 +10,13 @@ import {
   descreverMao,
   type CategoriaDeMao,
 } from '@poker/hand-evaluator';
-import type { AnaliseDoCoach, Carta, PossibilidadeDeJogada } from '@poker/shared-types';
+import {
+  PERFIL_RECOMENDADO,
+  type AnaliseDoCoach,
+  type Carta,
+  type PerfilDoCoach,
+  type PossibilidadeDeJogada,
+} from '@poker/shared-types';
 import type { ContextoDoJogador } from './contexto.js';
 
 export interface OpcoesDeAnalise {
@@ -18,16 +24,81 @@ export interface OpcoesDeAnalise {
   readonly aleatorio?: () => number;
 }
 
+/**
+ * O que muda de um perfil para outro. As equities são contra mãos aleatórias; as margens
+ * comparam a equity com o necessário para pagar (pot odds).
+ */
+export interface ParametrosDoPerfil {
+  /** Equity a partir da qual apostar/aumentar é "boa" (por valor). */
+  readonly subirBom: number;
+  /** Equity a partir da qual apostar/aumentar é "neutra" (proteção, semi-blefe). */
+  readonly subirNeutro: number;
+  /** Margem sobre as pot odds para pagar ser "boa"; abaixo de `pagarNeutro`, "ruim". */
+  readonly pagarBom: number;
+  readonly pagarNeutro: number;
+  /** Equity a partir da qual ir all-in é "bom" ou "neutro". */
+  readonly allInBom: number;
+  readonly allInNeutro: number;
+  /** Com equity acima disto, passar deixa fichas na mesa (avaliação "neutra"). */
+  readonly passarDeixaValor: number;
+  /** Tamanho da aposta em fração do pote, e do aumento em fração do pote depois de pagar. */
+  readonly fracaoDaAposta: number;
+  readonly fracaoDoAumento: number;
+}
+
+export const PARAMETROS_DOS_PERFIS: Record<PerfilDoCoach, ParametrosDoPerfil> = {
+  agressivo: {
+    subirBom: 0.5,
+    subirNeutro: 0.35,
+    pagarBom: 0,
+    pagarNeutro: -0.08,
+    allInBom: 0.6,
+    allInNeutro: 0.45,
+    passarDeixaValor: 0.55,
+    fracaoDaAposta: 0.8,
+    fracaoDoAumento: 1,
+  },
+  equilibrado: {
+    subirBom: 0.6,
+    subirNeutro: 0.45,
+    pagarBom: 0.05,
+    pagarNeutro: -0.05,
+    allInBom: 0.7,
+    allInNeutro: 0.55,
+    passarDeixaValor: 0.65,
+    fracaoDaAposta: 2 / 3,
+    fracaoDoAumento: 0.75,
+  },
+  seguro: {
+    subirBom: 0.72,
+    subirNeutro: 0.6,
+    pagarBom: 0.1,
+    pagarNeutro: 0.02,
+    allInBom: 0.82,
+    allInNeutro: 0.7,
+    passarDeixaValor: 0.78,
+    fracaoDaAposta: 0.5,
+    fracaoDoAumento: 0.6,
+  },
+};
+
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
-export function analisar(c: ContextoDoJogador, o: OpcoesDeAnalise = {}): AnaliseDoCoach {
+export function analisar(
+  c: ContextoDoJogador,
+  o: OpcoesDeAnalise = {},
+  perfil: PerfilDoCoach = PERFIL_RECOMENDADO,
+): AnaliseDoCoach {
   const eq = equidadeContra(c, c.oponentes.length, o);
   const necessaria = c.paraPagar > 0 ? equityNecessaria(c.paraPagar, c.pote) : null;
 
   return {
     numeroDaMao: c.numeroDaMao,
     momento: c.momento,
+    modo: c.minhaVez ? 'decisao' : 'leitura',
+    perfil,
     fase: c.fase,
+    cartasNaMesa: c.cartasNaMesa.length,
     maoAtual: descreverMaoAtual(c.minhasCartas, c.cartasNaMesa),
     oponentes: eq.oponentes,
     vitoria: eq.vitoria,
@@ -39,7 +110,7 @@ export function analisar(c: ContextoDoJogador, o: OpcoesDeAnalise = {}): Analise
     paraPagar: c.paraPagar,
     equityNecessaria: necessaria,
     posicao: c.posicao,
-    possibilidades: avaliarPossibilidades(c, eq.equity, necessaria),
+    possibilidades: c.minhaVez ? avaliarPossibilidades(c, eq.equity, necessaria, perfil) : [],
   };
 }
 
@@ -78,14 +149,19 @@ function chancesFinais(eq: ResultadoDeEquity, cartasNaMesa: number) {
     .map(([categoria, chance]) => ({ mao: NOMES_DAS_CATEGORIAS[categoria], chance }));
 }
 
-/** Tamanho sugerido para apostar/aumentar: cerca de 2/3 do pote, dentro do permitido. */
-export function tamanhoSugerido(c: ContextoDoJogador, tipo: 'apostar' | 'aumentar'): number | null {
+/** Tamanho sugerido para apostar/aumentar, conforme o perfil, dentro do permitido. */
+export function tamanhoSugerido(
+  c: ContextoDoJogador,
+  tipo: 'apostar' | 'aumentar',
+  perfil: PerfilDoCoach = PERFIL_RECOMENDADO,
+): number | null {
   const intervalo = c.acoes[tipo];
   if (!intervalo) return null;
+  const p = PARAMETROS_DOS_PERFIS[perfil];
   const desejado =
     tipo === 'apostar'
-      ? Math.round((c.pote * 2) / 3)
-      : Math.round(c.maiorAposta + ((c.pote + c.paraPagar) * 3) / 4);
+      ? Math.round(c.pote * p.fracaoDaAposta)
+      : Math.round(c.maiorAposta + (c.pote + c.paraPagar) * p.fracaoDoAumento);
   return Math.min(Math.max(desejado, intervalo.minimo), intervalo.maximo);
 }
 
@@ -93,39 +169,39 @@ export function avaliarPossibilidades(
   c: ContextoDoJogador,
   equity: number,
   necessaria: number | null,
+  perfil: PerfilDoCoach = PERFIL_RECOMENDADO,
 ): PossibilidadeDeJogada[] {
+  const p = PARAMETROS_DOS_PERFIS[perfil];
   const { acoes } = c;
   const lista: PossibilidadeDeJogada[] = [];
   const contra = c.oponentes.length === 1 ? '1 adversário' : `${c.oponentes.length} adversários`;
+  const margem = necessaria === null ? null : equity - necessaria;
 
   if (acoes.desistir) {
-    if (c.paraPagar === 0) {
+    if (c.paraPagar === 0 || margem === null) {
       lista.push({
         acao: 'desistir',
         valor: null,
         avaliacao: 'ruim',
         motivo: 'Passar é de graça: desistir só joga a mão fora.',
       });
-    } else if (necessaria !== null && equity < necessaria) {
-      lista.push({
-        acao: 'desistir',
-        valor: null,
-        avaliacao: 'boa',
-        motivo: `Pagar exige ${pct(necessaria)} de equity e você tem ${pct(equity)}.`,
-      });
     } else {
+      // Desistir é bom quando pagar seria ruim para este perfil.
+      const pagarSeriaRuim = margem < p.pagarNeutro;
       lista.push({
         acao: 'desistir',
         valor: null,
-        avaliacao: 'ruim',
-        motivo: `Sua equity (${pct(equity)}) já cobre o preço do pote (${pct(necessaria ?? 0)}).`,
+        avaliacao: pagarSeriaRuim ? 'boa' : margem < p.pagarBom ? 'neutra' : 'ruim',
+        motivo: pagarSeriaRuim
+          ? `Pagar exige ${pct(necessaria ?? 0)} de equity e você tem ${pct(equity)}.`
+          : `Sua equity (${pct(equity)}) cobre o preço do pote (${pct(necessaria ?? 0)}).`,
       });
     }
   }
 
   if (acoes.passar) {
     lista.push(
-      equity >= 0.65
+      equity >= p.passarDeixaValor
         ? {
             acao: 'passar',
             valor: null,
@@ -144,39 +220,39 @@ export function avaliarPossibilidades(
     );
   }
 
-  if (acoes.pagar !== undefined && necessaria !== null) {
-    const margem = equity - necessaria;
+  if (acoes.pagar !== undefined && margem !== null && necessaria !== null) {
+    const apertada = margem >= p.pagarNeutro && margem < p.pagarBom;
     lista.push({
       acao: 'pagar',
       valor: c.minhaAposta + acoes.pagar,
-      avaliacao: margem >= 0.05 ? 'boa' : margem > -0.05 ? 'neutra' : 'ruim',
-      motivo: `Precisa de ${pct(necessaria)} de equity e você tem ${pct(equity)} contra ${contra}.${margem > -0.05 && margem < 0.05 ? ' Decisão apertada.' : ''}`,
+      avaliacao: margem >= p.pagarBom ? 'boa' : margem >= p.pagarNeutro ? 'neutra' : 'ruim',
+      motivo: `Precisa de ${pct(necessaria)} de equity e você tem ${pct(equity)} contra ${contra}.${apertada ? ' Decisão apertada.' : ''}`,
     });
   }
 
   for (const tipo of ['apostar', 'aumentar'] as const) {
-    const valor = tamanhoSugerido(c, tipo);
+    const valor = tamanhoSugerido(c, tipo, perfil);
     if (valor === null) continue;
     lista.push({
       acao: tipo,
       valor,
-      avaliacao: equity >= 0.6 ? 'boa' : equity >= 0.45 ? 'neutra' : 'ruim',
+      avaliacao: equity >= p.subirBom ? 'boa' : equity >= p.subirNeutro ? 'neutra' : 'ruim',
       motivo:
-        equity >= 0.6
+        equity >= p.subirBom
           ? `Por valor: com ${pct(equity)} você é favorito contra ${contra}.`
-          : equity >= 0.45
-            ? `Equilibrado (${pct(equity)}): pode proteger a mão, mas arrisca fichas.`
+          : equity >= p.subirNeutro
+            ? `Pressão com ${pct(equity)}: protege a mão e pode fazer o adversário desistir.`
             : `Seria um blefe com ${pct(equity)} contra ${contra}: arriscado.`,
     });
   }
 
   if (acoes.allIn !== undefined) {
     const stackCurto = c.meuStack <= c.pote * 0.5;
+    const bom = equity >= p.allInBom || (stackCurto && equity >= p.allInNeutro);
     lista.push({
       acao: 'all-in',
       valor: acoes.allIn,
-      avaliacao:
-        equity >= 0.7 || (stackCurto && equity >= 0.5) ? 'boa' : equity >= 0.55 ? 'neutra' : 'ruim',
+      avaliacao: bom ? 'boa' : equity >= p.allInNeutro ? 'neutra' : 'ruim',
       motivo: stackCurto
         ? `Stack curto em relação ao pote: com ${pct(equity)}, ir all-in simplifica a decisão.`
         : `Arrisca o stack inteiro (${c.meuStack}) com ${pct(equity)} de equity.`,
